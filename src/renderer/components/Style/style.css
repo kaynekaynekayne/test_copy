@@ -1,0 +1,425 @@
+/* 커스텀 스크롤바 */
+div::-webkit-scrollbar { width: 5px; }
+div::-webkit-scrollbar { height: 5px; }
+div::-webkit-scrollbar-track { background-color:#1C283E; }
+div::-webkit-scrollbar-thumb { background: #0078D7; }
+div::-webkit-scrollbar-thumb:hover { background: #0078D7; }
+div::-webkit-scrollbar-thumb:active { background: #0078D7; }
+div::-webkit-scrollbar-button { display: none; }
+
+textarea::-webkit-scrollbar { width: 5px; }
+textarea::-webkit-scrollbar { height: 5px; }
+textarea::-webkit-scrollbar-track { background-color:#1C283E; }
+textarea::-webkit-scrollbar-thumb { background: #0078D7; }
+textarea::-webkit-scrollbar-thumb:hover { background: #0078D7; }
+textarea::-webkit-scrollbar-thumb:active { background: #0078D7; }
+textarea::-webkit-scrollbar-button { display: none; }
+
+/* font */
+@font-face {
+   font-family: 'roboto';
+   src: url('~@/assets/font/roboto/Roboto-Regular.ttf') format('font-type'),
+        url('~@/assets/font/roboto/Roboto-Light.ttf') format('font-type'),
+        url('~@/assets/font/roboto/Roboto-Medium.ttf') format('font-type');
+}
+
+html, body {
+  font-family: 'roboto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  font-family: 'roboto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* BG Theme */
+body {
+  background-color: #1A2539;
+  overflow: hidden;
+  user-select: none;
+  /* user-select: none; */
+}
+
+/* progress */
+progress {
+  background-color: red;
+  border: 0;
+  height: 3px;
+  border-radius: 5px;
+  width: 100%;
+}
+progress::-webkit-progress-bar {
+  background-color: gray;
+  border: 0;
+  height: 3px;
+  border-radius: 5px;
+  width: 100%;
+}
+progress::-webkit-progress-value {
+  background-color: red;
+  border: 0;
+  height: 3px;
+  border-radius: 5px;
+  width: 100%;
+}
+
+.userSelectNone {
+  user-select: none;
+}
+
+/* 컬럼 스타일 */
+.colbox {
+  padding: 10px 3px 10px 3px;
+}
+
+/* degree */
+.degreeNormal {
+  background-color: gray;
+  border-radius: 50%;
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-left: 2px;
+}
+
+/* Tab select */
+.tabSelected {
+  background-color: #2E5F87 !important;
+  color: white;
+  height: 30px;
+  font-size: 13px;
+  line-height: 13px;
+}
+.tabNonSelected {
+  background-color: #1F3550 !important;
+  color: gray;
+  height: 30px;
+  font-size: 13px;
+  line-height: 13px;
+}
+
+/* drag style */
+.ghost {
+  opacity: 0.5;
+  background: #c8ebfb;
+}
+.selected {
+  border: 1px solid !important;
+  border: solid red 1px !important;
+}
+
+/* card theme */
+.blackCard {
+  background-color: #1C283E !important;
+  padding: 3px 10px 20px 10px;
+  border-radius: 5px;
+  box-shadow: 2px 2px 2px black;
+  border: 1px solid #303744;
+}
+
+.cbcCard {
+  background-color: #1A212E !important;
+  padding: 3px 10px 20px 10px;
+  border-radius: 5px;
+  box-shadow: 2px 2px 2px black;
+  border: 1px solid #303744;
+}
+
+.cbcLabel {
+  background-color: #1A212E;
+  border: 1px solid #1F3550;
+  border-radius: 5px;
+  font-size: 12px;
+  padding: 2px 2px 2px 2px;
+}
+
+/* Custom button black*/
+.custom-black-btn {
+  box-shadow: 1px 1px #101724;
+  background-color: #1A2539;
+  text-align: center;
+  margin: 0 auto;
+  border-radius: 5px;
+  font-size: 20px;
+}
+
+.custom-black-btn:hover {
+    background-color: #2B3264 !important;
+}
+
+/* custom input (배경 투명) */
+.custom-white-input  {
+  padding: 5px;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  border-bottom: 1px solid white;
+  border-radius: 0;
+  font-size: 12px;
+  background-color: rgba(255, 255, 255, 0);
+  width: 100%;
+  border-radius: 5px;
+  color: white;
+}
+.custom-white-input:focus {
+  outline: none;
+}
+.custom-white-input:focus ~ .border_white_input  {
+  width: 100%;
+  visibility: visible;
+  transition: 0.5s;
+}
+.custom-white-input ~ .border_white_input {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+}
+.border_white_input {
+  border: 1px solid #1C283E !important;
+  visibility: hidden;
+}
+/* input 공통 */
+.commonInput + label {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border: 1px solid #bcbcbc;
+  cursor: pointer;
+  margin-top: 10px;
+}
+.commonInput:checked + label {
+  background-color: red;
+}
+.commonInput:disabled + label {
+  background-color: gray;
+}
+.commonInput {
+  display: none;
+}
+
+.customInputBlack {
+  background-color: #263B55;
+  color: white;
+  border: none;
+  height: 25px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.customInputBlack:read-only {
+  background-color: #263B55;
+  color: white;
+  border: none;
+}
+
+.disabledColor:disabled {
+  background-color: #5C5C5C;
+}
+
+textarea {
+  background-color: #29354B !important;
+  border: none !important;
+  color: white !important;
+}
+
+/* .commentWrapper {
+  position: absolute;
+  bottom: 20px;
+  width: 90%;
+  margin-left: 7px;
+} */
+
+/* select box */
+.customSelect {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: url('~@/assets/login/ic_arrow_drop_down_black_48dp.png') no-repeat 95% 50%;
+}
+/* IE10, 11 */
+.customSelect::-ms-expand {
+  display: none;
+}
+
+.custonSelectWhite {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: #263B55 !important;
+  border: none;
+  color: white;
+  font-size: 12px;
+  background: url('~@/assets/test/ic_arrow_drop_down_white_48dp.png') no-repeat 95% 50%;
+  background-size: 35px;
+}
+
+/* IE10, 11 */
+.custonSelectWhite::-ms-expand {
+  display: none;
+}
+
+.custonSelectWhite option {
+  background-color: #1C283E !important;
+}
+
+/* custom button */
+.custom-white-btn {
+  color: white !important;
+  border-color: white !important;
+  background-color: rgba(255, 255, 255, 0) !important;
+}
+.custom-white-btn:hover{
+    background-color: #33325C !important;
+}
+.custom-blue-btn {
+  color: white !important;
+  background-color: #0080C1 !important;
+}
+.custom-gray-btn {
+  color: white !important;
+  background-color: #B1B1B1 !important;
+}
+
+
+/* Drag and Drop - start */
+/* drop target state */
+[data-draggable="target"][aria-dropeffect="move"] {
+  /* border-color:#68b;
+  background:#fff; */
+}
+
+/* drop target focus and dragover state */
+[data-draggable="target"][aria-dropeffect="move"]:focus,
+[data-draggable="target"][aria-dropeffect="move"].dragover {
+  outline:none;
+  box-shadow:0 0 0 1px #fff, 0 0 0 3px #68b;
+}
+
+/* draggable items */
+[data-draggable="item"] {
+  margin:0 0 2px 0;
+  padding:0.2em 0.4em;
+  border-radius:0.2em;
+  line-height:1.3;
+  width: 10%;
+}
+
+/* items focus state */
+[data-draggable="item"]:focus {
+  outline:none;
+  box-shadow:0 0 0 2px #68b, inset 0 0 0 1px #ddd;
+}
+
+[data-draggable="item"].translate {
+  margin-left: 90px;
+  transition: margin-left 1s 0s;
+}
+
+/* items grabbed state */
+[data-draggable="item"][aria-grabbed="true"] {
+  background:#8ad;
+  color:#fff;
+}
+/* Drag and Drop - end */
+
+/* Cursor */
+.pointer {
+  cursor:pointer
+}
+
+/* modal style */
+/* .modal .modal-content {
+  border-radius: 10px !important;
+  background-color: #1E4164 !important;
+}
+.modal .modal-body {
+  background-color: #1E4164 !important;
+  border-radius: 10px;
+  padding: 5px !important;
+  color: white !important;
+} */
+.modalTitle {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.panelTitle {
+  font-size: 20px;
+  color: #2798DC;
+  border-bottom: 1px solid #2B455C;
+  display: table;
+  padding-right: 40px;
+}
+.panelSubTitle {
+  font-size: 15px;
+  color: white;
+  font-weight: bold;
+}
+.panelSubTitleBlue {
+  font-size: 15px;
+  color: #09CBFC;
+}
+.panelContent {
+  font-size: 14px;
+}
+
+/* report body */
+.reportBody {
+  color: gray;
+  font-size: 13px;
+}
+
+/* whole slide select */
+.wholeSlideSelect {
+  -webkit-filter: opacity(.8) drop-shadow(0 0 0 red) !important;
+  filter: opacity(.8) drop-shadow(0 0 0 red) !important;
+}
+
+/**************************/
+/* Color */
+.colorWhite {
+  color: white;
+}
+.colorGray {
+  color: gray;
+}
+.colorRed {
+  color: red;
+}
+.colorBlueTitle {
+  color: #2798DC;
+}
+.colorGreen {
+  color: #5D9657;
+}
+.colorBackground {
+  color: #1A2539;
+}
+.borderColorGray {
+  border-color: #303744 !important;
+}
+
+/* text */
+.textOverflowEllipse {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.inputCustom {
+  height: 25px !important;
+  font-size: 11px !important;
+}
+
+.fontSize14 {
+  font-size: 14px;
+}
+
+.dropDownStyle .dropdown-menu {
+  max-height: 500px;
+  overflow-y: auto;
+}
