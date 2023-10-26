@@ -209,7 +209,7 @@
       ipcRenderer.removeAllListeners(Constant.SELECT_EMP_NO)
       ipcRenderer.removeAllListeners(Constant.GET_RBC_COUNT)
       ipcRenderer.removeAllListeners(Constant.GET_WBC_HIST_LIST)
-      ipcRenderer.removeAllListeners(Constant.SET_LOCK_SLIDE)
+      ipcRenderer.removeAllListeners(Constant.GET_LOCK_STATE)
 
       this.EventBus.$off('WBC_IMG_LOADED')
       this.EventBus.$off('UPLOAD_LIS')
@@ -219,15 +219,15 @@
       this.EventBus.$off('ON_CLICK_REPORT_SIGN')
       this.EventBus.$off('REPORT_SIGN')
 
-      // ipcRenderer.send(Constant.SET_LOCK_SLIDE, JSON.stringify({
-      //   cassetId: this.selectedItem.CASSET_ID,
-      //   slotId: this.selectedItem.SLOT_ID,
-      //   userId: this.currentUser.userId,
-      //   machineId: this.machineId,
-      //   hostIp: '',//self.settings.hostIp,
-      //   localIp: this.localIp,
-      //   lockState: 'N'
-      // }))
+      ipcRenderer.send(Constant.SET_LOCK_SLIDE, JSON.stringify({
+        cassetId: this.selectedItem.CASSET_ID,
+        slotId: this.selectedItem.SLOT_ID,
+        userId: this.currentUser.userId,
+        machineId: this.machineId,
+        hostIp: '',//self.settings.hostIp,
+        localIp: this.localIp,
+        lockState: 'N'
+      }))
 
     },
     mounted () {
@@ -1788,14 +1788,52 @@
         }))
 
         ipcRenderer.once(Constant.GET_LOCK_STATE, function (event, result) {
-          console.log(result)
-          if (result.LOCK_STATE === 'N') {
+          // console.log(result)
+          // {CASSET_ID: "20231011122141_", HOST_IP: "", LOCAL_IP: "192.168.0.15", LOCK_DTTM: "20231013163010", LOCK_STATE: "N", ...}
+
+          if (result.LOCK_STATE === 'N' || result.USER_ID === self.currentUser.userId) {
             if (self.prevItem !== null) {
+
+              // console.log(self.$route.path)
+              // /homePage/resultClassification/20231005171717_09_20231005171904/wbcReport
+              
+              // console.log(self.isLoadingImg)
+              // false
+              
+              // console.log(self.selectedItem.TEST_TYPE)
+              // 04
+
+              // console.log(self.selectedItem.TEST_TYPE_CD)
+              // 04
+              
+              // console.log(self.prevItem.TEST_TYPE)
+              // PB
+
+              // console.log(self.prevItem.TEST_TYPE_CD)
+              // 04
+
               if (self.$route.path.includes('wbcReport')) {
                 if (!self.isLoadingImg) {
                   self.isLoadingImg = true
                 }
               }
+
+              if (self.selectedItem.TEST_TYPE !== self.prevItem.TEST_TYPE_CD) {
+                self.onClickList(self.prevItem.SLOT_ID, true)
+              } else {
+                self.onClickList(self.prevItem.SLOT_ID, false)
+              }
+
+              if (self.isCbcShow) {
+                self.getCbcResults(true)
+              }
+              self.$store.dispatch(Constant.SET_CLASSIFICATION_ITEM, { item: self.prevItem, limit: self.getClassificationItem.limit})
+
+              // ipcRenderer.send(Constant.GET_TEST_HISTORY, JSON.stringify({slotId: self.prevItem.SLOT_ID}))
+              ipcRenderer.send(Constant.UPDATE_CHECKED_CELL, JSON.stringify({
+                isChecked: 'Y',
+                slotId: self.prevItem.SLOT_ID
+              }))
 
               // 현재 슬라이드 잠금 해제
               ipcRenderer.send(Constant.SET_LOCK_SLIDE, JSON.stringify({
@@ -1819,22 +1857,9 @@
                 lockState: 'Y'
               }))
 
-              if (self.selectedItem.TEST_TYPE !== self.prevItem.TEST_TYPE_CD) {
-                self.onClickList(self.prevItem.SLOT_ID, true)
-              } else {
-                self.onClickList(self.prevItem.SLOT_ID, false)
-              }
-
-              if (self.isCbcShow) {
-                self.getCbcResults(true)
-              }
-              self.$store.dispatch(Constant.SET_CLASSIFICATION_ITEM, { item: self.prevItem, limit: self.getClassificationItem.limit})
-
-              ipcRenderer.send(Constant.GET_TEST_HISTORY, JSON.stringify({slotId: self.prevItem.SLOT_ID}))
-              ipcRenderer.send(Constant.UPDATE_CHECKED_CELL, JSON.stringify({
-                isChecked: 'Y',
-                slotId: self.prevItem.SLOT_ID
-              }))
+              setTimeout(function() {
+                ipcRenderer.send(Constant.GET_TEST_HISTORY, JSON.stringify({slotId: self.prevItem.SLOT_ID}))
+              }, 300)
 
             }
           } else {
@@ -1843,12 +1868,12 @@
               duration: '2000'
             })
           }
-        })
-
+         })
       },
       onClickNext () {
         var self = this
 
+        //잠금 체크
         ipcRenderer.send(Constant.GET_LOCK_STATE, JSON.stringify({
           cassetId: self.nextItem.CASSET_ID,
           slotId: self.nextItem.SLOT_ID
@@ -1856,14 +1881,32 @@
 
         ipcRenderer.once(Constant.GET_LOCK_STATE, function (event, result) {
           console.log(result)
+          if (result.LOCK_STATE === 'N' || result.USER_ID === self.currentUser.userId) {
+            console.log('next')
 
-          if (result.LOCK_STATE === 'N') {
             if (self.nextItem !== null) {
               if (self.$route.path.includes('wbcReport')) {
                 if (!self.isLoadingImg) {
                   self.isLoadingImg = true
                 }
               }
+
+              if (self.selectedItem.TEST_TYPE !== self.nextItem.TEST_TYPE_CD) {
+                self.onClickList(self.nextItem.SLOT_ID, true)
+              } else {
+                self.onClickList(self.nextItem.SLOT_ID, false)
+              }
+
+              if (self.isCbcShow) {
+                self.getCbcResults(true)
+              }
+              self.$store.dispatch(Constant.SET_CLASSIFICATION_ITEM, { item: self.nextItem, limit: self.getClassificationItem.limit})
+
+              // ipcRenderer.send(Constant.GET_TEST_HISTORY, JSON.stringify({slotId: self.nextItem.SLOT_ID}))
+              ipcRenderer.send(Constant.UPDATE_CHECKED_CELL, JSON.stringify({
+                isChecked: 'Y',
+                slotId: self.nextItem.SLOT_ID
+              }))
 
               // 현재 슬라이드 잠금 해제
               ipcRenderer.send(Constant.SET_LOCK_SLIDE, JSON.stringify({
@@ -1887,29 +1930,22 @@
                 lockState: 'Y'
               }))
 
-              if (self.selectedItem.TEST_TYPE !== self.nextItem.TEST_TYPE_CD) {
-                self.onClickList(self.nextItem.SLOT_ID, true)
-              } else {
-                self.onClickList(self.nextItem.SLOT_ID, false)
-              }
-
-              if (self.isCbcShow) {
-                self.getCbcResults(true)
-              }
-              self.$store.dispatch(Constant.SET_CLASSIFICATION_ITEM, { item: self.nextItem, limit: self.getClassificationItem.limit})
-
-              ipcRenderer.send(Constant.GET_TEST_HISTORY, JSON.stringify({slotId: self.nextItem.SLOT_ID}))
-              ipcRenderer.send(Constant.UPDATE_CHECKED_CELL, JSON.stringify({
-                isChecked: 'Y',
-                slotId: self.nextItem.SLOT_ID
-              }))
+              setTimeout(function() {
+                ipcRenderer.send(Constant.GET_TEST_HISTORY, JSON.stringify({slotId: self.nextItem.SLOT_ID}))
+              }, 300)
             }
+          } else {
+            self.$toasted.show('This is the slide locked by ' + result.USER_ID, {
+              position: 'bottom-center',
+              duration: '2000'
+            })
           }
         })
       }
     }
   }
 </script>
+
 <style>
   #tabCard {
     height: 626px;

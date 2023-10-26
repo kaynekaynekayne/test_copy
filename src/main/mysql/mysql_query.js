@@ -21,6 +21,17 @@ export default Object.freeze({
       , MODIFY_DTTM = ?
    WHERE USER_ID = ?`,
 
+   //Ãß°¡
+   UPDATE_USER:
+   `UPDATE TB_USER
+    SET AUTH_CD = ?
+     , USER_NM = ?
+     , IS_AVAILABLE = ?
+     , EMP_NO = ?
+     , MODIFY_DTTM = ?¤º
+    WHERE USER_ID = ?`,
+ 
+
   INSERT_USER:
   `INSERT INTO PB_DB.TB_USER
    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
@@ -919,7 +930,11 @@ export default Object.freeze({
      , MODIFY_DTTM
      , MODIFY_ID
    )
-   VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`,
+   VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
+   ON DUPLICATE KEY UPDATE
+    LOCK_STATE = ?
+    , MODIFY_DTTM = date_format(now(), '%Y%m%d%H%i%S')
+    , MODIFY_ID = ?`,
 
   UPDATE_IS_NORMAL_CELL:
   `UPDATE TB_TEST_HISTORY
@@ -1401,5 +1416,16 @@ export default Object.freeze({
       SET MALARIA_COUNT = ?
       , MODIFY_DTTM = date_format(now(), '%Y%m%d%H%i%S')
       , MODIFY_ID = ?
-  WHERE SLOT_ID = ?`
+  WHERE SLOT_ID = ?`,
+
+  UPDATE_TEST_HISTORY_PATIENT:
+  `UPDATE TB_TEST_HISTORY
+    SET BARCODE_NO = ?
+     , PATIENT_ID = ?
+     , PATIENT_NM = ?
+     , MODIFY_DTTM = ?
+     , MODIFY_ID = ?
+   WHERE CASSET_ID = ?
+     AND SLOT_ID = ?`
+
 })

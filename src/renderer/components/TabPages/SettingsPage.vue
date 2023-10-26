@@ -1094,6 +1094,14 @@
       })
 
       ipcRenderer.on('selected-dir', function (event, results) {
+        // console.log("%%%%%%%%%")
+        // console.log("%%%%%%%%%")
+        // console.log("%%%%%%%%%")
+        // console.log(results)
+        // console.log("%%%%%%%%%")
+        // console.log("%%%%%%%%%")
+        // console.log("%%%%%%%%%")
+
         results.path = self.$replaceAll(results.path, '\\', '/')
 
         if (results.pathType === 'pbiaRootPath') {

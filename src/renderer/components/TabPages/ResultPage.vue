@@ -161,6 +161,7 @@
                         </th>
                         <!-- <th>Work list</th> -->
                         <th>PB/BF</th>
+                        <th>State</th>
                         <th>Tray slot</th>
                         <th v-if="siteCd === '0007'">
                           <span>Barcode ID</span>
@@ -200,7 +201,7 @@
                         <th>Submit</th>
                         <th>Submit Date</th>
                         <th>Edit</th>
-                        <th>State</th>
+                        <!-- <th>State</th> -->
                       </tr>
                     </thead>
                     <tbody>
@@ -264,6 +265,13 @@
                             {{ item.TEST_TYPE }}
                           </span>
                         </td>
+                        <td v-if="item.LOCK_STATE === 'Y'" class="pointer">
+                          <b-icon icon="lock" variant="danger" aria-hidden="true"></b-icon>
+                          <span style="color: red;">{{item.USER_ID}}</span>
+                        </td>
+                        <td v-else class="pointer">
+                          <b-icon icon="unlock" aria-hidden="true"></b-icon>
+                        </td>
                         <td>
                           1-{{ item.SLOT_NO }}
                         </td>
@@ -307,13 +315,13 @@
                         </td>
                         <td v-else>
                         </td>
-                        <td v-if="item.LOCK_STATE === 'Y'" class="pointer">
+                        <!-- <td v-if="item.LOCK_STATE === 'Y'" class="pointer">
                           <b-icon icon="lock" variant="danger" aria-hidden="true"></b-icon>
                           <span style="color: red;">{{item.USER_ID}}</span>
                         </td>
                         <td v-else class="pointer">
                           <b-icon icon="unlock" aria-hidden="true"></b-icon>
-                        </td>
+                        </td> -->
                       </tr>
                     </tbody>
                   </table>
@@ -769,58 +777,62 @@
       // 슬라이드 잠금 상태 조회
       ipcRenderer.on(Constant.GET_LOCK_STATE, function (event, result) {
         console.log(result)
-        // if (result.LOCK_STATE === 'N') {
-        //   // set lock state
-        //   ipcRenderer.send(Constant.SET_LOCK_SLIDE, JSON.stringify({
-        //     cassetId: self.selectItem.CASSET_ID,
-        //     slotId: self.selectItem.SLOT_ID,
-        //     userId: self.userId.userId,
-        //     machineId: self.machineId,
-        //     hostIp: '',//self.settings.hostIp,
-        //     localIp: self.localIp,
-        //     lockState: 'Y'
-        //   }))
-        //
-        //   self.isSlideLockError = false
-        //
-        // } else {
-        //   if (self.userId.userId !== result.USER_ID) {
-        //     self.$toasted.show('This is the slide locked by ' + result.USER_ID, {
-        //       position: 'bottom-center',
-        //       duration: '2000'
+        if (result.LOCK_STATE === 'N' || result.USER_ID === self.userId.userId) {
+          
+          // 슬라이드 체크 업데이트
+          ipcRenderer.send(Constant.UPDATE_CHECKED_CELL, JSON.stringify({
+            isChecked: 'Y',
+            slotId: self.selectItem.SLOT_ID
+          }))
+          
+          // 잠금 상태 업데이트
+          ipcRenderer.send(Constant.SET_LOCK_SLIDE, JSON.stringify({
+            cassetId: self.selectItem.CASSET_ID,
+            slotId: self.selectItem.SLOT_ID,
+            userId: self.userId.userId,
+            machineId: self.machineId,
+            hostIp: '',//self.settings.hostIp,
+            localIp: self.localIp,
+            lockState: 'Y'
+          }))
+
+          // 여기다 저장
+          self.$store.dispatch(Constant.ADD_DSP_LIST, self.dspTestList)
+          //dspTestList 배열 206개 다 나옴
+          self.$router.push({path: '/homePage/resultClassification/' + self.selectItem.SLOT_ID })
+        } 
+        else {
+          self.$toasted.show('This is the slide locked by ' + result.USER_ID, {
+            position: 'bottom-center',
+            duration: '2000'
+          })
+        }
+
+        // setTimeout(function() {
+        //   if (!self.isSlideLockError) {
+        //     var workItem = self.workList.filter(function(listItem) {
+        //       return listItem.SLOT_ID === self.selectItem.SLOT_ID
         //     })
-        //
-        //     self.isSlideLockError = true
-        //   } else {
-        //     self.isSlideLockError = false
+
+        //     console.log(workItem)
+        //     console.log(self.workList)
+        //     // work list에 추가
+        //     if (workItem.length <= 0) {
+        //       self.$store.dispatch(Constant.ADD_WORK_LIST, self.selectItem)
+        //     }
+
+        //     // 여기다 저장
+        //     self.$store.dispatch(Constant.ADD_DSP_LIST, self.dspTestList)
+        //     self.$router.push({path: '/homePage/resultClassification/' + self.selectItem.SLOT_ID })
+
+        //     ipcRenderer.send(Constant.UPDATE_CHECKED_CELL, JSON.stringify({
+        //       isChecked: 'Y',
+        //       slotId: self.selectItem.SLOT_ID
+        //     }))
         //   }
-        // }
 
-        setTimeout(function() {
-          if (!self.isSlideLockError) {
-            var workItem = self.workList.filter(function(listItem) {
-              return listItem.SLOT_ID === self.selectItem.SLOT_ID
-            })
-
-            console.log(workItem)
-            console.log(self.workList)
-            // work list에 추가
-            if (workItem.length <= 0) {
-              self.$store.dispatch(Constant.ADD_WORK_LIST, self.selectItem)
-            }
-
-            // 여기다 저장
-            self.$store.dispatch(Constant.ADD_DSP_LIST, self.dspTestList)
-            self.$router.push({path: '/homePage/resultClassification/' + self.selectItem.SLOT_ID })
-
-            ipcRenderer.send(Constant.UPDATE_CHECKED_CELL, JSON.stringify({
-              isChecked: 'Y',
-              slotId: self.selectItem.SLOT_ID
-            }))
-          }
-
-          self.EventBus.$emit('OVERLAY', {state: false})
-        }, 300)
+        //   self.EventBus.$emit('OVERLAY', {state: false})
+        // }, 300)
       })
 
       // 디렉터리 선택

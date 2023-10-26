@@ -801,12 +801,22 @@ ipcMain.on('SHUTDOWN', (event, payload) => {
 
 // select folder
 ipcMain.on('open-file-dialog-for-dir', async (event, pathType) => {
-  const dir = await dialog.showOpenDialog({ properties: ['openDirectory'] })
+
+  // log.info(pathType)
+  // "backupPath" string 보낸 그대로 뜸
+
+  const dir = await dialog.howOpenDialog({ properties: ['openDirectory'] })
+  // showOpenDialog를 사용하면 사용자가 하나 이상의 파일 또는 폴더를 선택할 수 있음
+
   if (dir) {
     var params = {
       path: dir[0],
       pathType: pathType
     }
+
+    // log.info(params)
+    // { path: 'C:\\Users\\theyg\\Downloads', pathType: 'backupPath' }
+
     event.sender.send("selected-dir", params)
   }
 })
@@ -1241,6 +1251,9 @@ ipcMain.on(Constant.UPDATE_LIS_CONN_PATH, (event, payload) => {
 })
 
 ipcMain.on(Constant.UPDATE_CHECKED_CELL, (event, payload) => {
+  // log.info(payload)
+  //{"isChecked":"Y","slotId":"20230920175553_00_20230920175601"}
+
   var params = JSON.parse(payload)
   var args = []
 
@@ -1270,6 +1283,11 @@ ipcMain.on(Constant.SET_LOCK_SLIDE, (event, payload) => {
   args.push(params.userId)
   args.push(getDateTime())
   args.push(params.userId)
+
+  //update
+  args.push(params.lockState)
+  args.push(params.userId)
+  
 
   MySql.INSERT(query.INSERT_VIEWER_LOCK, args).then(function(ret) {
     event.sender.send(Constant.SET_LOCK_SLIDE, ret, null)
@@ -2466,6 +2484,16 @@ ipcMain.on(Constant.GET_LOCK_STATE, (event, payload) => {
   args.push(params.slotId)
 
   MySql.SELECT_ONE(query.CHECK_SLIDE_LOCK_STATE, args).then(function(ret) {
+    log.info(ret)
+    // { CASSET_ID: '20231005171717_',
+    // SLOT_ID: '20231005171717_09_20231005171904',
+    // USER_ID: 'cccccc',
+    // MACHINE_ID: 'fd538b6d-5183-48af-a044-d3e947146967',
+    // HOST_IP: '',
+    // LOCAL_IP: '192.168.0.101',
+    // LOCK_DTTM: '20231025155242',
+    // LOCK_STATE: 'N' }
+
     event.sender.send(Constant.GET_LOCK_STATE, ret, null)
 
   }).catch(function(err) {
