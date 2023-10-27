@@ -249,16 +249,7 @@
 
 
         ipcRenderer.on(Constant.SET_LOCK_SLIDE, function (event, result) {
-          console.log("$$$$$")
-          console.log("$$$$$")
-          console.log("$$$$$")
-          console.log("$$$$$")
-          console.log(result)
-          console.log("$$$$$")
-          console.log("$$$$$")
-          console.log("$$$$$")
-          console.log("$$$$$")
-
+          
         })
 
         // before data

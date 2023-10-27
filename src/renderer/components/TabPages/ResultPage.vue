@@ -776,7 +776,17 @@
 
       // 슬라이드 잠금 상태 조회
       ipcRenderer.on(Constant.GET_LOCK_STATE, function (event, result) {
+
         console.log(result)
+        // { CASSET_ID: '20231005171717_',
+        // SLOT_ID: '20231005171717_09_20231005171904',
+        // USER_ID: 'cccccc',
+        // MACHINE_ID: 'fd538b6d-5183-48af-a044-d3e947146967',
+        // HOST_IP: '',
+        // LOCAL_IP: '192.168.0.101',
+        // LOCK_DTTM: '20231025155242',
+        // LOCK_STATE: 'N' }
+
         if (result.LOCK_STATE === 'N' || result.USER_ID === self.userId.userId) {
           
           // 슬라이드 체크 업데이트
@@ -784,7 +794,7 @@
             isChecked: 'Y',
             slotId: self.selectItem.SLOT_ID
           }))
-          
+           
           // 잠금 상태 업데이트
           ipcRenderer.send(Constant.SET_LOCK_SLIDE, JSON.stringify({
             cassetId: self.selectItem.CASSET_ID,

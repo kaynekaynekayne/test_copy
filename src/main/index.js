@@ -1262,6 +1262,7 @@ ipcMain.on(Constant.UPDATE_CHECKED_CELL, (event, payload) => {
 
   MySql.UPDATE(query.UPDATE_IS_CHECKED_CELL, args).then(function(ret) {
     event.sender.send(Constant.UPDATE_CHECKED_CELL, ret, null)
+
   }).catch(function(err) {
     event.sender.send(Constant.UPDATE_CHECKED_CELL, null, err)
   })
@@ -1287,6 +1288,17 @@ ipcMain.on(Constant.SET_LOCK_SLIDE, (event, payload) => {
   //update
   args.push(params.lockState)
   args.push(params.userId)
+
+  log.info("((((((((((((((")
+  log.info("((((((((((((((")
+  log.info("((((((((((((((")
+  log.info("((((((((((((((")
+  log.info(args)
+  log.info("((((((((((((((")
+  log.info("((((((((((((((")
+  log.info("((((((((((((((")
+  log.info("((((((((((((((")
+
   
 
   MySql.INSERT(query.INSERT_VIEWER_LOCK, args).then(function(ret) {
@@ -2357,100 +2369,139 @@ ipcMain.on(Constant.SET_WBC_CUSTOM_LIST, (event, payload) => {
   })
 })
 
-ipcMain.on(Constant.DELETE_BACKUP_DATA, (event, payload) => {
+ipcMain.on(Constant.DELETE_BACKUP_DATA, async (event, payload) => {
   var params = JSON.parse(payload)
 
-  if (params.backupList !== null && typeof(params.backupList) !== 'undefined') {
-    params.backupList.forEach(function (item, index) {
-      var insertArgs = []
-      insertArgs.push(item.CASSET_ID)
-      insertArgs.push(item.SLOT_ID)
-      insertArgs.push('Y')
-      insertArgs.push(getDateTime())
-      insertArgs.push('')
-      insertArgs.push(getDateTime())
-      insertArgs.push(params.userId)
-      insertArgs.push(getDateTime())
-      insertArgs.push(params.userId)
+  try {
+    if (params.backupList !== null && typeof(params.backupList) !== 'undefined') {
+      await MySql.BEGIN_TRANSACTION()
 
-      MySql.INSERT(query.INSERT_BACKUP_HIST, insertArgs).then(function(ret) {
-        event.sender.send(Constant.UPDATE_HOT_KEYS, ret, null)
-      }).catch(function(err) {
-        event.sender.send(Constant.UPDATE_HOT_KEYS, null, err)
+      params.backupList.forEach(async function (item, index, array) {
+        var insertArgs = []
+        insertArgs.push(item.CASSET_ID)
+        insertArgs.push(item.SLOT_ID)
+        insertArgs.push('Y')
+        insertArgs.push(getDateTime())
+        insertArgs.push('')
+        insertArgs.push(getDateTime())
+        insertArgs.push(params.userId)
+        insertArgs.push(getDateTime())
+        insertArgs.push(params.userId)
+
+        await MySql.INSERT(query.INSERT_BACKUP_HIST, insertArgs)
+
+        var deleteArgs = []
+        deleteArgs.push(item.CASSET_ID)
+        deleteArgs.push(item.SLOT_ID)
+
+        await MySql.DELETE(query.DELETE_BACKUP_TEST_HISTORY, deleteArgs)
+
+        if (index + 1 === array.length) {
+          await MySql.COMMIT()
+          event.sender.send(Constant.DELETE_BACKUP_DATA, params.backupList, null)
+        }
       })
-
-      var deleteArgs = []
-      deleteArgs.push(item.CASSET_ID)
-      deleteArgs.push(item.SLOT_ID)
-
-      MySql.DELETE(query.DELETE_BACKUP_TEST_HISTORY, deleteArgs).then(function(ret) {
-        log.info(ret)
-      }).catch(function(err) {
-        log.info(err)
-      })
-    })
+    }
+  } catch (err) {
+    log.info(err)
+    await MySql.ROLLBACK()
+    event.sender.send(Constant.DELETE_BACKUP_DATA, null, err)
   }
 })
 
-ipcMain.on(Constant.RESTORE_BACKUP_DATA, (event, payload) => {
+ipcMain.on(Constant.RESTORE_BACKUP_DATA, async (event, payload) => {
   var params = JSON.parse(payload)
 
-  if (params !== null && typeof(params) !== 'undefined') {
-    params.restoreList.forEach(function (item, index) {
-      var insertBackupArgs = []
-      insertBackupArgs.push(item.CASSET_ID)
-      insertBackupArgs.push(item.SLOT_ID)
-      insertBackupArgs.push('N')
-      insertBackupArgs.push('')
-      insertBackupArgs.push(getDateTime())
-      insertBackupArgs.push(getDateTime())
-      insertBackupArgs.push(params.userId)
-      insertBackupArgs.push(getDateTime())
-      insertBackupArgs.push(params.userId)
+  try {
+    if (params !== null && typeof(params) !== 'undefined') {
+      await MySql.BEGIN_TRANSACTION()
 
-      MySql.INSERT(query.INSERT_BACKUP_HIST, insertBackupArgs).then(function(ret) {
-        log.info(ret)
-      }).catch(function(err) {
-        log.info(err)
+      params.restoreList.forEach(async function (item, index, array) {
+        var insertRestoreArgs = []
+        insertRestoreArgs.push(item.CASSET_ID)
+        insertRestoreArgs.push(item.SLOT_ID)
+        insertRestoreArgs.push('N')
+        insertRestoreArgs.push('')
+        insertRestoreArgs.push(getDateTime())
+        insertRestoreArgs.push(getDateTime())
+        insertRestoreArgs.push(params.userId)
+        insertRestoreArgs.push(getDateTime())
+        insertRestoreArgs.push(params.userId)
+
+        await MySql.INSERT(query.INSERT_BACKUP_HIST, insertRestoreArgs)
+
+        var insertHistArgs = []
+        insertHistArgs.push(item.CASSET_ID)
+        insertHistArgs.push(item.SLOT_ID)
+        insertHistArgs.push(item.SLOT_NO)
+        insertHistArgs.push(item.BARCODE_NO)
+        insertHistArgs.push(item.PATIENT_ID)
+        insertHistArgs.push(item.PATIENT_NM)
+        insertHistArgs.push(item.ORDER_DTTM)
+        insertHistArgs.push(item.STATE_CD)
+        insertHistArgs.push(item.MALARIA_COUNT)
+        insertHistArgs.push(item.PLT_COUNT)
+        insertHistArgs.push(item.ANALYZE_DTTM)
+        insertHistArgs.push(item.BIRTHDAY)
+        insertHistArgs.push(item.GENDER)
+        insertHistArgs.push(item.TEST_TYPE)
+        insertHistArgs.push(item.SIGNED_STATE)
+        insertHistArgs.push(item.SIGNED_DTTM)
+        insertHistArgs.push(item.SIGNED_USER_ID)
+        insertHistArgs.push(item.WBC_COMMENT)
+        insertHistArgs.push(item.RBC_COMMENT)
+        insertHistArgs.push(item.MAX_WBC_COUNT)
+        insertHistArgs.push(item.MAX_RBC_COUNT)
+        insertHistArgs.push(item.SERIAL_NO)
+        insertHistArgs.push(item.TACT_TIME)
+        insertHistArgs.push(item.IS_NS_NB_INTEGRATION)
+        insertHistArgs.push(item.IS_NORMAL)
+        insertHistArgs.push(item.IS_CHECKED)
+        insertHistArgs.push(item.CREATE_DTTM)
+        insertHistArgs.push(item.CREATE_ID)
+        insertHistArgs.push(item.MODIFY_DTTM)
+        insertHistArgs.push(item.MODIFY_ID)
+
+        // duplicate key update
+        insertHistArgs.push(item.SLOT_NO)
+        insertHistArgs.push(item.BARCODE_NO)
+        insertHistArgs.push(item.PATIENT_ID)
+        insertHistArgs.push(item.PATIENT_NM)
+        insertHistArgs.push(item.ORDER_DTTM)
+        insertHistArgs.push(item.STATE_CD)
+        insertHistArgs.push(item.MALARIA_COUNT)
+        insertHistArgs.push(item.PLT_COUNT)
+        insertHistArgs.push(item.ANALYZE_DTTM)
+        insertHistArgs.push(item.BIRTHDAY)
+        insertHistArgs.push(item.GENDER)
+        insertHistArgs.push(item.TEST_TYPE)
+        insertHistArgs.push(item.SIGNED_STATE)
+        insertHistArgs.push(item.SIGNED_DTTM)
+        insertHistArgs.push(item.SIGNED_USER_ID)
+        insertHistArgs.push(item.WBC_COMMENT)
+        insertHistArgs.push(item.RBC_COMMENT)
+        insertHistArgs.push(item.MAX_WBC_COUNT)
+        insertHistArgs.push(item.MAX_RBC_COUNT)
+        insertHistArgs.push(item.SLOT_ID)
+        insertHistArgs.push(item.TACT_TIME)
+        insertHistArgs.push(item.IS_NS_NB_INTEGRATION)
+        insertHistArgs.push(item.IS_NORMAL)
+        insertHistArgs.push(item.IS_CHECKED)
+        insertHistArgs.push(item.MODIFY_DTTM)
+        insertHistArgs.push(item.MODIFY_ID)
+
+        await MySql.INSERT(query.INSERT_TEST_HISTORY, insertHistArgs)
+
+        if (index + 1 === array.length) {
+          await MySql.COMMIT()
+          event.sender.send(Constant.RESTORE_BACKUP_DATA, params.restoreList, null)
+        }
       })
-
-      var insertHistArgs = []
-      insertHistArgs.push(item.CASSET_ID)
-      insertHistArgs.push(item.SLOT_ID)
-      insertHistArgs.push(item.SLOT_NO)
-      insertHistArgs.push(item.BARCODE_NO)
-      insertHistArgs.push(item.PATIENT_ID)
-      insertHistArgs.push(item.PATIENT_NM)
-      insertHistArgs.push(item.ORDER_DTTM)
-      insertHistArgs.push(item.STATE_CD)
-      insertHistArgs.push(item.MALARIA_COUNT)
-      insertHistArgs.push(item.PLT_COUNT)
-      insertHistArgs.push(item.ANALYZE_DTTM)
-      insertHistArgs.push(item.BIRTHDAY)
-      insertHistArgs.push(item.GENDER)
-      insertHistArgs.push(item.TEST_TYPE)
-      insertHistArgs.push(item.SIGNED_STATE)
-      insertHistArgs.push(item.SIGNED_DTTM)
-      insertHistArgs.push(item.SIGNED_USER_ID)
-      insertHistArgs.push(item.WBC_COMMENT)
-      insertHistArgs.push(item.RBC_COMMENT)
-      insertHistArgs.push(item.MAX_WBC_COUNT)
-      insertHistArgs.push(item.MAX_RBC_COUNT)
-      insertHistArgs.push(item.SLOT_ID)
-      insertHistArgs.push(item.CREATE_DTTM)
-      insertHistArgs.push(item.CREATE_ID)
-      insertHistArgs.push(item.MODIFY_DTTM)
-      insertHistArgs.push(item.MODIFY_ID)
-      insertHistArgs.push(item.TACT_TIME)
-      insertHistArgs.push(item.IS_NS_NB_INTEGRATION)
-      insertHistArgs.push(item.IS_NORMAL)
-
-      MySql.INSERT(query.INSERT_TEST_HISTORY, insertHistArgs).then(function(ret) {
-        log.info(ret)
-      }).catch(function(err) {
-        log.info(err)
-      })
-    })
+    }
+  } catch (err) {
+    log.info(err)
+    await MySql.ROLLBACK()
+    event.sender.send(Constant.RESTORE_BACKUP_DATA, null, err)
   }
 })
 
@@ -2500,6 +2551,21 @@ ipcMain.on(Constant.GET_LOCK_STATE, (event, payload) => {
     event.sender.send(Constant.GET_LOCK_STATE, null, err)
   })
 })
+
+ipcMain.on(Constant.GET_IMAGE_ROLLBACK_LIST, (event, payload) => {
+  var params = JSON.parse(payload)
+  var args = []
+
+  args.push(params.cassetId)
+  args.push(params.slotId)
+
+  MySql.SELECT(query.SELECT_IMAGE_ROLLBACK, args).then(function(ret) {
+    event.sender.send(Constant.GET_IMAGE_ROLLBACK_LIST, ret, null)
+  }).catch(function(err) {
+    event.sender.send(Constant.GET_IMAGE_ROLLBACK_LIST, null, err)
+  })
+})
+
 
 ipcMain.on('send_print', (event, payload) => {
   console.log(mainWindow.webContents)

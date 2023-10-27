@@ -365,7 +365,8 @@
       tileSourceFromData (path) {
         var xmlData = fs.readFileSync(path, 'utf-8')
         var json = JSON.parse(convert.xml2json(xmlData, {compact: true}))
-        var url = path.split('.')[0] + '_files/'
+        //폴더명에 ',' 있을 때 rbc 사진 안 나오는 문제 해결
+        var url = path.replace('.dzi', '') + '_files/'
 
         var dzi = {
           Image: {

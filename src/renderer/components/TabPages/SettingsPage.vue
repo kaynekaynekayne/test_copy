@@ -725,6 +725,8 @@
   const renameOverwrite = require('rename-overwrite')
   const ipcRenderer = require('electron').ipcRenderer
 
+  const ncp = require('ncp').ncp
+
   var queue = async.queue(function(task, callback) {
     fs.readFile(task.filename, 'utf-8', function(err, dataRead) {
       callback(err, task.filename, dataRead)
@@ -1094,14 +1096,6 @@
       })
 
       ipcRenderer.on('selected-dir', function (event, results) {
-        // console.log("%%%%%%%%%")
-        // console.log("%%%%%%%%%")
-        // console.log("%%%%%%%%%")
-        // console.log(results)
-        // console.log("%%%%%%%%%")
-        // console.log("%%%%%%%%%")
-        // console.log("%%%%%%%%%")
-
         results.path = self.$replaceAll(results.path, '\\', '/')
 
         if (results.pathType === 'pbiaRootPath') {
