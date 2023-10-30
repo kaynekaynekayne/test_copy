@@ -209,6 +209,7 @@
       ipcRenderer.removeAllListeners(Constant.SELECT_EMP_NO)
       ipcRenderer.removeAllListeners(Constant.GET_RBC_COUNT)
       ipcRenderer.removeAllListeners(Constant.GET_WBC_HIST_LIST)
+      ipcRenderer.removeAllListeners(Constant.GET_IMAGE_ROLLBACK_LIST)
       ipcRenderer.removeAllListeners(Constant.GET_LOCK_STATE)
 
       this.EventBus.$off('WBC_IMG_LOADED')
@@ -233,23 +234,20 @@
     mounted () {
       var self = this
       var rootPath = this.settings.pbiaRootPath + '/' + this.orderId
-      // console.log(rootPath)
-      // D:/IA_Proc/20230201124922_00_20230201124929
-
       this.machineId = machineIdSync({original: true})
       this.localIp = ip.address()
 
       console.log(this.dspList)
       this.$nextTick(function() {
         ipcRenderer.send(Constant.GET_TEST_HISTORY, JSON.stringify({slotId: self.orderId}))
-        //self.orderId=20230201124922_00_20230201124929
         ipcRenderer.send(Constant.SELECT_LIS_CONN_PATH, JSON.stringify({deviceBarcode: self.deviceBarcode}))
         ipcRenderer.send(Constant.SELECT_CBC_CODE, null)
         ipcRenderer.send(Constant.SELECT_EMP_NO, JSON.stringify({userId: self.currentUser.userId}))
 
-
-        ipcRenderer.on(Constant.SET_LOCK_SLIDE, function (event, result) {
-          
+	      // image rollback list
+        ipcRenderer.on(Constant.GET_IMAGE_ROLLBACK_LIST, function (event, result) {
+          console.log(result)
+          self.$store.dispatch(Constant.SET_ROLLBACK_LIST, result)
         })
 
         // before data
@@ -258,6 +256,7 @@
           self.beforeDataList = result
         })
 
+        // 사번 조회
         ipcRenderer.on(Constant.SELECT_EMP_NO, function (event, result) {
           console.log(result)
           self.empNo = result.EMP_NO
@@ -300,13 +299,12 @@
         // 슬라이드 조회
         ipcRenderer.on(Constant.GET_TEST_HISTORY, function (event, result) {
           console.log('GET_TEST_HISTORY')
-          // console.log(result)
-          // {ANALYZE_DTTM: "20230821142500", BARCODE_NO: "barcode", BIRTHDAY: "", CASSET_ID: "cassetId", CREATE_DTTM: "20231024095956", …}
 
           // self.EventBus.$emit('OVERLAY', {state: false})
+
           self.selectedItem = result
-          self.signedInfo.signedState = self.selectedItem.SIGNED_STATE  //"Ready"
-          self.signedInfo.signedUserId = self.selectedItem.SIGNED_USER_ID  //""
+          self.signedInfo.signedState = self.selectedItem.SIGNED_STATE
+          self.signedInfo.signedUserId = self.selectedItem.SIGNED_USER_ID
           self.testTypeNm = self.commonCode(Constant.GET_CODE_LIST_TEST_TYPE, self.selectedItem.TEST_TYPE).cdNm
 
           // get prev, next item [
@@ -343,9 +341,12 @@
           // }
           ipcRenderer.send(Constant.GET_RBC_COUNT, JSON.stringify({slotId: self.selectedItem.SLOT_ID}))
           ipcRenderer.send(Constant.GET_WBC_HIST_LIST, JSON.stringify({slotId: self.selectedItem.SLOT_ID}))
+	        ipcRenderer.send(Constant.GET_IMAGE_ROLLBACK_LIST, JSON.stringify({
+            cassetId: self.selectedItem.CASSET_ID,
+            slotId: self.selectedItem.SLOT_ID
+          }))
 
           fs.readdir(self.settings.pbiaRootPath + '/' + self.selectedItem.SLOT_ID + '/' + self.settings.barcodeDirName, function(err, files) {
-
             if (!err) {
               self.barcodePath = 'file://' + self.settings.pbiaRootPath + '/' + self.selectedItem.SLOT_ID + '/' + self.settings.barcodeDirName + '/' + files[0] + '?' + self.$getDateTimeStr()
               self.onClickList(self.selectedItem.SLOT_ID, self.isRefreshMenu)
@@ -1779,30 +1780,9 @@
         }))
 
         ipcRenderer.once(Constant.GET_LOCK_STATE, function (event, result) {
-          // console.log(result)
-          // {CASSET_ID: "20231011122141_", HOST_IP: "", LOCAL_IP: "192.168.0.15", LOCK_DTTM: "20231013163010", LOCK_STATE: "N", ...}
-
+          console.log(result)
           if (result.LOCK_STATE === 'N' || result.USER_ID === self.currentUser.userId) {
             if (self.prevItem !== null) {
-
-              // console.log(self.$route.path)
-              // /homePage/resultClassification/20231005171717_09_20231005171904/wbcReport
-              
-              // console.log(self.isLoadingImg)
-              // false
-              
-              // console.log(self.selectedItem.TEST_TYPE)
-              // 04
-
-              // console.log(self.selectedItem.TEST_TYPE_CD)
-              // 04
-              
-              // console.log(self.prevItem.TEST_TYPE)
-              // PB
-
-              // console.log(self.prevItem.TEST_TYPE_CD)
-              // 04
-
               if (self.$route.path.includes('wbcReport')) {
                 if (!self.isLoadingImg) {
                   self.isLoadingImg = true
@@ -1859,12 +1839,12 @@
               duration: '2000'
             })
           }
-         })
+        })
+
       },
       onClickNext () {
         var self = this
 
-        //잠금 체크
         ipcRenderer.send(Constant.GET_LOCK_STATE, JSON.stringify({
           cassetId: self.nextItem.CASSET_ID,
           slotId: self.nextItem.SLOT_ID
@@ -1936,7 +1916,6 @@
     }
   }
 </script>
-
 <style>
   #tabCard {
     height: 626px;

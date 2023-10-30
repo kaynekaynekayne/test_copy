@@ -1344,7 +1344,7 @@
       onFocusDataList (evt) {
         this.inputFocus = true
       },
-      onFocusDataRemark (evt) {
+      onFocusDataRemark(evt){
         this.inputFocusRemark=true
       },
       onFocusOutDataList (evt) {
@@ -1353,7 +1353,7 @@
           self.inputFocus = false
         }, 300)
       },
-      onFocusOutDataRemark (evt) {
+      onFocusOutDataRemark(evt) {
         var self = this
         setTimeout(function() {
           self.inputFocusRemark = false

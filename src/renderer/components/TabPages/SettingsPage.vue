@@ -1,17 +1,5 @@
 <template>
   <b-container id="settingPage" class="pl-2 pt-2 pb-2" fluid>
-
-    <!-- <b-card class="blackCard h-100 w-50" text-variant="white" no-body>
-      <div id="title" class="panelTitle">Image path</div>
-      <b-row class="mt-3">
-        <b-col class="panelSubTitle pt-1 pl-5" cols="4">
-          PB-IA Root directory
-        </b-col>
-        <b-col>
-          <input type="text" class="w-100" v-model="pbiaRootPath" @click="onFileSelectorClick('pbiaRootPath')" readonly />
-        </b-col>
-      </b-row>
-    </b-card> -->
     <b-row>
       <b-col cols="3">
         <div>
@@ -717,15 +705,13 @@
   import 'vue-slider-component/theme/antd.css'
   import ModalBackup from '../Common/ModalBackup'
   import api from '@/service'
-
+  const ncp = require('ncp').ncp
   const fs = require('fs')
   const fse = require('fs-extra')
   const path = require('path')
   const async = require('async')
   const renameOverwrite = require('rename-overwrite')
   const ipcRenderer = require('electron').ipcRenderer
-
-  const ncp = require('ncp').ncp
 
   var queue = async.queue(function(task, callback) {
     fs.readFile(task.filename, 'utf-8', function(err, dataRead) {
@@ -785,7 +771,8 @@
       ipcRenderer.removeAllListeners(Constant.SELECT_LIS_CONN_PATH)
       ipcRenderer.removeAllListeners(Constant.GET_BACKUP_LIST)
       ipcRenderer.removeAllListeners(Constant.SELECT_WBC_RUNNING_COUNT)
-
+      ipcRenderer.removeAllListeners(Constant.RESTORE_BACKUP_DATA)
+      ipcRenderer.removeAllListeners(Constant.DELETE_BACKUP_DATA)
     },
     mounted () {
       var self = this
@@ -861,6 +848,34 @@
 
       console.log(this.currentUser)
 
+      ipcRenderer.on(Constant.DELETE_BACKUP_DATA, function (event, results, err) {
+        if (err) {
+          self.$toasted.show(err.message, {
+            position: 'bottom-center',
+            duration: '2000'
+          })
+        } else {
+          self.$toasted.show(Constant.IDS_MSG_SUCCESS, {
+            position: 'bottom-center',
+            duration: '2000'
+          })
+        }
+      })
+
+      ipcRenderer.on(Constant.RESTORE_BACKUP_DATA, function (event, results, err) {
+        if (err) {
+          self.$toasted.show(err.message, {
+            position: 'bottom-center',
+            duration: '2000'
+          })
+        } else {
+          self.$toasted.show(Constant.IDS_MSG_SUCCESS, {
+            position: 'bottom-center',
+            duration: '2000'
+          })
+        }
+      })
+
       ipcRenderer.on(Constant.GET_BACKUP_LIST, function (event, results) {
         console.log(results)
         if (results.length <= 0) {
@@ -869,30 +884,55 @@
             duration: '2000'
           })
         } else {
-          var resultBackupList = []
-          // var errorList = []
-
-          self.$modal.show(ModalBackup, {}, {
-            height: 'auto',
-            clickToClose: false
-          })
-
           if (results.length > 0) {
-            self.copyFile(results, 0, resultBackupList, 'backup', function(res) {
-              console.log(res)
-              // json data
-              fs.writeFile(self.backupPath + '/' + self.backupStartDate + '_' + self.backupEndDate + '_back.json', JSON.stringify(res), function(err) {
-                if (!err) {
-                  console.log('write backup json')
-                }
-              })
+            console.log(results)
 
-              // delete database
-              var params = {
-                userId: self.getCurrentUser.userId,
-                backupList: res
+            self.$modal.show(ModalBackup, {}, {
+              height: 'auto',
+              clickToClose: true
+            })
+            fs.writeFile(self.backupPath + '/' + self.backupStartDate + '_' + self.backupEndDate + '_back.json', JSON.stringify(results), function(err) {
+              if (!err) {
+                console.log('write backup json')
+
+                results.forEach(function(item, index, array) {
+                  var srcPath = self.pbiaRootPath + '/' + item.SLOT_ID
+                  var destPath = self.backupPath + '/' + item.SLOT_ID
+
+                  ncp(srcPath, destPath, function (err) {
+                    if (!err) {
+                      console.log('copy : ' + srcPath + ' -> ' + destPath)
+                      console.log((index + 1) + ':' + array.length)
+
+                      var percent = (((index + 1 ) / array.length) * 100).toFixed(2)
+                      self.EventBus.$emit('COPY_FILES', {value: percent, text: 'copy ' + (index + 1) + ' / ' + array.length + ' slides...'})
+
+                      // 카피한 디렉토리 삭제
+                      self.deleteFolderRecursive(srcPath)
+
+                      if (index + 1 === array.length) {
+                        self.$modal.hideAll()
+                        var params = {
+                          userId: self.getCurrentUser.userId,
+                          backupList: array
+                        }
+                        ipcRenderer.send(Constant.DELETE_BACKUP_DATA, JSON.stringify(params))
+                      }
+                    } else {
+                      console.log(err)
+                      self.$modal.hideAll()
+                      self.EventBus.$emit('COPY_FILES', {value: percent, text: err.message})
+                    }
+                  })
+                })
+              } else {
+                self.$toasted.show(err.message, {
+                  position: 'bottom-center',
+                  duration: '2000'
+                })
+
+                self.$modal.hideAll()
               }
-              ipcRenderer.send(Constant.DELETE_BACKUP_DATA, JSON.stringify(params))
             })
           }
         }
@@ -1076,20 +1116,6 @@
         })
       })
 
-      // ipcRenderer.on('restore-success', function (event, results) {
-      //   self.$toasted.show(Constant.IDS_MSG_SUCCESS, {
-      //     position: 'bottom-center',
-      //     duration: '2000'
-      //   })
-      // })
-      //
-      // ipcRenderer.on('backup-success', function (event, results) {
-      //   self.$toasted.show(Constant.IDS_MSG_SUCCESS, {
-      //     position: 'bottom-center',
-      //     duration: '2000'
-      //   })
-      // })
-
       ipcRenderer.on('file-select', function (event, results) {
         console.log(results)
         self.restoreFile = results[0]
@@ -1169,61 +1195,55 @@
               duration: '2000'
             })
           } else {
-            console.log(self.restoreFile.split('\\'))
             var restoreArr = self.restoreFile.split('\\')
-            var restorePath = ''
-
-            for (var i = 0; i < restoreArr.length - 1; i++) {
-              restorePath += restoreArr[i] + '/'
-            }
-
+            var restorePath = self.restoreFile.substr(0, self.restoreFile.lastIndexOf('\\'))
             var restoreData = JSON.parse(data)
-            var restoreList = []
+
             console.log(restoreData)
+            console.log(restorePath)
 
             self.$modal.show(ModalBackup, {}, {
               height: 'auto',
               clickToClose: false
             })
 
-            // restore backup data
-            self.copyFile(restoreData, 0, restoreList, 'restore', function(res) {
-              console.log(res)
+            restoreData.forEach(function(item, index, array) {
+              var srcPath = restorePath + '/' + item.SLOT_ID
+              var destPath = self.pbiaRootPath + '/' + item.SLOT_ID
 
-              var params = {
-                userId: self.getCurrentUser.userId,
-                restoreList: res
-              }
-              ipcRenderer.send(Constant.RESTORE_BACKUP_DATA, JSON.stringify(params))
+              ncp(srcPath, destPath, function (err) {
+                if (!err) {
+                  console.log('copy : ' + srcPath + ' -> ' + destPath)
+                  console.log((index + 1) + ':' + array.length)
+
+                  var percent = (((index + 1 ) / array.length) * 100).toFixed(2)
+                  self.EventBus.$emit('COPY_FILES', {value: percent, text: 'copy ' + (index + 1) + ' / ' + array.length + ' slides...'})
+
+                  if (index + 1 === array.length) {
+                    self.$modal.hideAll()
+                    var params = {
+                      userId: self.getCurrentUser.userId,
+                      restoreList: array
+                    }
+                    ipcRenderer.send(Constant.RESTORE_BACKUP_DATA, JSON.stringify(params))
+                  }
+                } else {
+                  console.log(err)
+                  self.$modal.hideAll()
+                  self.EventBus.$emit('COPY_FILES', {value: percent, text: err.message})
+                }
+              })
             })
 
-            // 복원 progress
-            // self.$modal.show(ModalBackup, {}, {
-            //   height: 'auto',
-            //   clickToClose: false
-            // })
-
-            // restoreData.forEach(function(item, index) {
-            //   fs.access(restorePath + item.SLOT_ID, fs.constants.F_OK, function(err) {
-            //     if (!err) {
-            //       self.copyFolderSync(restorePath + item.SLOT_ID, self.pbiaRootPath + '/' + item.SLOT_ID, item.SLOT_ID)
-            //     } else {
-            //       console.log(err)
-            //     }
-            //   })
+            // restore backup data
+            // self.copyFile(restoreData, 0, restoreList, 'restore', function(res) {
+            //   console.log(res)
             //
-            //   if (index + 1 === restoreData.length) {
-            //     var params = {
-            //       userId: self.getCurrentUser.userId,
-            //       restoreList: restoreData
-            //     }
-            //     ipcRenderer.send(Constant.RESTORE_BACKUP_DATA, JSON.stringify(params))
-            //
-            //     self.$toasted.show(Constant.IDS_MSG_SUCCESS, {
-            //       position: 'bottom-center',
-            //       duration: '2000'
-            //     })
+            //   var params = {
+            //     userId: self.getCurrentUser.userId,
+            //     restoreList: res
             //   }
+            //   ipcRenderer.send(Constant.RESTORE_BACKUP_DATA, JSON.stringify(params))
             // })
           }
         })
@@ -1463,6 +1483,24 @@
       }
     },
     methods: {
+      deleteFolderRecursive (path) {
+        var self = this
+        var files = []
+
+        if(fs.existsSync(path)) {
+          files = fs.readdirSync(path)
+          files.forEach( function(file,index) {
+            var curPath = path + "/" + file
+            if(fs.lstatSync(curPath).isDirectory()) { // recurse
+              self.deleteFolderRecursive(curPath)
+            } else { // delete file
+              fs.unlinkSync(curPath)
+            }
+          })
+
+          fs.rmdirSync(path)
+        }
+      },
       onQualityPlay () {
         console.log('onQualityPlay')
       },
@@ -1536,38 +1574,38 @@
         }
         ipcRenderer.send(Constant.UPDATE_NORMAL_RANGE, JSON.stringify(params))
       },
-      copyFolderSync (from, to, slotId) {
-        var self = this
-
-        // 폴더 생성
-        if (!fs.existsSync(to)) {
-          fs.mkdirSync(to)
-        }
-
-        fs.readdirSync(from).forEach(function(element) {
-          if (fs.lstatSync(path.join(from, element)).isFile()) {
-            // fs.copyFileSync(path.join(from, element), path.join(to, element))
-
-            // console.log('copy file from : ' + path.join(from, element))
-            // console.log('copy file to : ' + path.join(to, element))
-
-            // console.log(queue)
-            queue.push({filename:path.join(from, element)}, function(err, filename, res) {
-              console.log(filename + ' read')
-              fs.copyFile(path.join(from, element), path.join(to, element), function(err) {
-                if (!err) {
-                  console.log('copy : ' + path.join(from, element) + '->' + path.join(to, element))
-                } else {
-                  console.log(err)
-                }
-              })
-            })
-
-          } else {
-            self.copyFolderSync(path.join(from, element), path.join(to, element))
-          }
-        })
-      },
+      // copyFolderSync (from, to, slotId) {
+      //   var self = this
+      //
+      //   // 폴더 생성
+      //   if (!fs.existsSync(to)) {
+      //     fs.mkdirSync(to)
+      //   }
+      //
+      //   fs.readdirSync(from).forEach(function(element) {
+      //     if (fs.lstatSync(path.join(from, element)).isFile()) {
+      //       // fs.copyFileSync(path.join(from, element), path.join(to, element))
+      //
+      //       // console.log('copy file from : ' + path.join(from, element))
+      //       // console.log('copy file to : ' + path.join(to, element))
+      //
+      //       // console.log(queue)
+      //       queue.push({filename:path.join(from, element)}, function(err, filename, res) {
+      //         console.log(filename + ' read')
+      //         fs.copyFile(path.join(from, element), path.join(to, element), function(err) {
+      //           if (!err) {
+      //             console.log('copy : ' + path.join(from, element) + '->' + path.join(to, element))
+      //           } else {
+      //             console.log(err)
+      //           }
+      //         })
+      //       })
+      //
+      //     } else {
+      //       self.copyFolderSync(path.join(from, element), path.join(to, element))
+      //     }
+      //   })
+      // },
       onResetDegree () {
         var self = this
 
@@ -1618,6 +1656,12 @@
       onBackup () {
         console.log('onBackup')
         console.log(this.backupStartDate + ' ~ ' + this.backupEndDate)
+
+        var start = new Date(this.backupStartDate)
+        var end = new Date(this.backupEndDate)
+        console.log(start)
+        console.log(end)
+
         if (this.backupPath === '') {
           this.$toasted.show(Constant.IDS_PLEASE_SELECT_A_BACKUP_PATH, {
             position: 'bottom-center',
@@ -1625,6 +1669,11 @@
           })
         } else if (this.backupStartDate === '' || this.backupEndDate === '') {
           this.$toasted.show(Constant.IDS_PLEASE_SELECT_A_BACKUP_DATE, {
+            position: 'bottom-center',
+            duration: '2000'
+          })
+        } else if (start > end) {
+          this.$toasted.show(Constant.IDS_START_DATE_IS_NOT_GREATER_THEN_END_DATE, {
             position: 'bottom-center',
             duration: '2000'
           })

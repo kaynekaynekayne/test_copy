@@ -11,6 +11,7 @@ import Marker from './routes/marker.js'
 import MainData from './routes/main_data.js'
 import File from './routes/file.js'
 import Directory from './routes/directory.js'
+import Rollback from './routes/rollback.js'
 
 import Configs from '../../Configs.js'
 
@@ -41,6 +42,7 @@ app.use(Configs.API_VERSION + 'marker', Marker)
 app.use(Configs.API_VERSION + 'mainData', MainData)
 app.use(Configs.API_VERSION + 'file', File)
 app.use(Configs.API_VERSION + 'directory', Directory)
+app.use(Configs.API_VERSION + 'rollback', Rollback)
 
 app.listen(18088, () => {
   log.info('server listen')

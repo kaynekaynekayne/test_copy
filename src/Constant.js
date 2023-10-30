@@ -33,6 +33,10 @@ export default Object.freeze({
   UPDATE_ORDER: 'updateOrder',
   UPDATE_ORDER_BF: 'updateOrderBf',
   UPDATE_IMAGE_HIST: 'updateImageHist',
+  SET_CURRENT_WBC_RESULTS: 'setCurrentWbcResults',
+  GET_CURRENT_WBC_RESULTS: 'getCurrentWbcResults',
+  SET_BEFORE_WBC_RESULTS: 'setBeforeWbcResults',
+  GET_BEFORE_WBC_RESULTS: 'getBeforeWbcResults',
 
   // 집계
   GET_WBC_MODIFY_LIST: 'getWbcModifyList',
@@ -186,6 +190,8 @@ export default Object.freeze({
   SET_ALARM_COUNT: 'setAlarmCount',
   SET_SORT_TYPE: 'setSortType',
   GET_SORT_TYPE: 'getSortType',
+  SET_CUSTOM_CLASS: 'setCustomClass',
+  GET_CUSTOM_CLASS: 'getCustomClass',
   SET_SYS_INFO: 'setSysInfo',
   GET_SYS_INFO: 'getSysInfo',
   SET_BACKEND_DATA: 'setBackendData',
@@ -211,6 +217,9 @@ export default Object.freeze({
   SET_GREEN_VALUE: 'setGreenValue',
   SET_BLUE_VALUE: 'setBlueValue',
   SET_RGB_VALUE: 'setRgbValue',
+  SET_ROLLBACK_LIST: 'setRollbackList',
+  GET_ROLLBACK_LIST: 'getRollbackList',
+  GET_IMAGE_ROLLBACK_LIST: 'getImageRollbackList',
 
   // rbc
   GET_RBC_BRIGHTNESS_SLIDE_VALUE: 'getRbcBrightnessSlideValue',
@@ -305,6 +314,22 @@ export default Object.freeze({
 
   // Workers
   RECEIVE_DATA_BROADCAST_CHAN: 'RECEIVE_DATA_BROADCAST_CHAN',
+
+  // PB APIS [
+  GET_PB_CLASSIFICATIONS: 'getPbClassifications',
+  GET_CLASSIFICATION_IMAGES: 'getClassificationImages',
+  GET_MARKER_POSITION: 'getMarkerPosition',
+  GET_PB_HOT_KEYS: 'getPbHotKeys',
+  UPDATE_CLASSIFICATION: 'updateClassification',
+  PB_IA_MOVE_IMAGE: 'PbIaMoveImage',
+  SET_WBC_IMAGE_LIST: 'setWbcImageList',
+  GET_PB_WBC_IMAGES: 'getPbWbcImages',
+  SET_SELECTED_ITEM: 'setSelectedItem',
+  GET_SELECTED_ITEM: 'getSelectedItem',
+  IA_SET_CUSTOM_CLASS: 'iaSetCustomClass',
+  IA_GET_CUSTOM_CLASS: 'iaGetCustomClass',
+  // PB APIS ]
+
 
   // Message
   IDS_MSG_SUCCESS: 'Success',

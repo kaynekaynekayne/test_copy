@@ -237,7 +237,7 @@ CommonUtils.install = function (Vue, options) {
       if (maxItem === null) {
         maxItem = item
       } else {
-          if (Number(maxItem.COUNT) < Number(maxItem.COUNT)) {
+          if (Number(maxItem.COUNT) < Number(item.COUNT)) {
             maxItem = item
           }
         }

@@ -481,14 +481,29 @@ export default Object.freeze({
     },
     {
       sql: `CREATE TABLE IF NOT EXISTS PB_DB.TB_WBC_CLASS_ORDER (
-        CLASS_ID               VARCHAR(10)    NOT NULL
-        , TEST_TYPE            VARCHAR(10)    NOT NULL
-        , ORDER_NO             VARCHAR(50)
-        , CREATE_DTTM          VARCHAR(50)
-        , CREATE_ID            VARCHAR(50)
-        , MODIFY_DTTM          VARCHAR(50)
-        , MODIFY_ID            VARCHAR(50)
+        CLASS_ID                      VARCHAR(10)  NOT NULL
+        , TEST_TYPE                   VARCHAR(10)  NOT NULL
+        , ORDER_NO                    VARCHAR(50)
+        , CREATE_DTTM                 VARCHAR(50)
+        , CREATE_ID                   VARCHAR(50)
+        , MODIFY_DTTM                 VARCHAR(50)
+        , MODIFY_ID                   VARCHAR(50)
         , PRIMARY KEY(CLASS_ID, TEST_TYPE)
+      )`
+    },
+    {
+      sql: `CREATE TABLE IF NOT EXISTS PB_DB.TB_IMAGE_ROLLBACK (
+        SEQ_NO                         INT(10)       NOT NULL AUTO_INCREMENT
+        , CASSET_ID                    VARCHAR(100)  NOT NULL
+        , SLOT_ID                      VARCHAR(100)  NOT NULL
+        , SRC_PATH                     TEXT          NOT NULL
+        , DEST_PATH                    TEXT          NOT NULL
+        , IS_ROLLBACK                  VARCHAR(1)    NOT NULL
+        , CREATE_DTTM                  VARCHAR(50)
+        , CREATE_ID                    VARCHAR(50)
+        , MODIFY_DTTM                  VARCHAR(50)
+        , MODIFY_ID                    VARCHAR(50)
+        , PRIMARY KEY(SEQ_NO)
       )`
     }
   ]

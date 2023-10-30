@@ -37,40 +37,32 @@ router.post('/:type', async function (req, res) {
 
       await MySql.BEGIN_TRANSACTION()
 
-      fileList.forEach(async function(file) {
+      fileList.forEach(async function(file, index, array) {
         // move file
         var srcPath = path + '/' + file.srcId + '/' + file.fileName
         var destPath = path + '/' + file.targetId + '/' + file.fileName
 
-        console.log(srcPath)
-        console.log(destPath)
+        fs.renameSync(srcPath, destPath)
 
-        fs.rename(srcPath, destPath, async function(err) {
-          console.log(err)
-          if (err) {
-            await MySql.ROLLBACK()
+        var updataMalaArgs = []
+        updataMalaArgs.push(Number(req.body.malariaCount))
+        updataMalaArgs.push(req.body.userId)
+        updataMalaArgs.push(req.body.slotId)
 
-            retObj.errorCode = err.code
-            retObj.errorMessage = err.message
-            retObj.results = []
-
-            res.status(201).send(retObj)
-          } else {
-            var updataMalaArgs = []
-            updataMalaArgs.push(Number(req.body.malariaCount))
-            updataMalaArgs.push(req.body.userId)
-            updataMalaArgs.push(req.body.slotId)
-
-            await MySql.UPDATE(query.UPDATE_MALARIA_COUNT, updataMalaArgs)
-            await MySql.COMMIT()
-
-            retObj.errorCode = 'E0000'
-            retObj.errorMessage = ''
-            retObj.results = []
-            res.status(201).send(retObj)
-          }
-        })
+        await MySql.UPDATE(query.UPDATE_MALARIA_COUNT, updataMalaArgs)
       })
+
+      await MySql.COMMIT()
+
+      if (connection) {
+        connection.release()
+      }
+
+      retObj.errorCode = 'E0000'
+      retObj.errorMessage = ''
+      retObj.results = []
+      res.status(201).send(retObj)
+
     } else {
       var retObj = {}
       var path = req.body.path
@@ -88,13 +80,14 @@ router.post('/:type', async function (req, res) {
         args.push(req.body.slotId)
         sql += `\n AND CLASS_ID = ` + fileList[0].targetClassId
 
-        var isInsert = await MySql.SELECT(sql, args)
-        if (isInsert === 'N') {
+        var rows = await MySql.SELECT(sql, args)
+        console.log(rows[0].IS_INSERT)
+        if (rows[0].IS_INSERT === 'N') {
           var insertArgs = []
           insertArgs.push(req.body.cassetId)
           insertArgs.push(req.body.slotId)
           insertArgs.push(fileList[0].targetClassId)
-          insertArgs.push(fileList[0].targetTitle)
+          insertArgs.push(fileList[0].name)
           insertArgs.push(fileList[0].targetTitle)
           insertArgs.push(req.body.userId)
           insertArgs.push(req.body.userId)
@@ -115,7 +108,7 @@ router.post('/:type', async function (req, res) {
 
         await MySql.UPDATE(query.UPDATE_WBC_CLASSIFICATION, updateArgs)
 
-        fileList.forEach(async function(file) {
+        fileList.forEach(async function(file, index, array) {
           // move file
           var srcPath = path + '/' + file.srcClassId + '_' + file.srcTitle + '/' + file.fileName
           var destPath = path + '/' + file.targetClassId + '_' + file.targetTitle + '/' + file.fileName
@@ -123,47 +116,44 @@ router.post('/:type', async function (req, res) {
           console.log(srcPath)
           console.log(destPath)
 
-          fs.rename(srcPath, destPath, async function(err) {
-            console.log(err)
-            if (err) {
-              await MySql.ROLLBACK()
+          fs.renameSync(srcPath, destPath)
 
-              retObj.errorCode = err.code
-              retObj.errorMessage = err.message
-              retObj.results = []
+          var insertHistArgs = []
+          insertHistArgs.push(req.body.cassetId)
+          insertHistArgs.push(req.body.slotId)
+          insertHistArgs.push(file.srcClassId)
+          insertHistArgs.push(file.fileName)
+          insertHistArgs.push(file.targetClassId)
+          insertHistArgs.push(req.body.userId)
+          insertHistArgs.push(req.body.userId)
+          // update params
+          insertHistArgs.push(file.targetClassId)
+          insertHistArgs.push(req.body.userId)
 
-              res.status(201).send(retObj)
-            } else {
-              var insertHistArgs = []
-              insertHistArgs.push(req.body.cassetId)
-              insertHistArgs.push(req.body.slotId)
-              insertHistArgs.push(file.srcClassId)
-              insertHistArgs.push(file.fileName)
-              insertHistArgs.push(file.targetClassId)
-              insertHistArgs.push(req.body.userId)
-              insertHistArgs.push(req.body.userId)
-              // update params
-              insertHistArgs.push(file.targetClassId)
-              insertHistArgs.push(req.body.userId)
+          await MySql.INSERT(query.INSERT_WBC_IMAGE_HIST, insertHistArgs)
 
-              await MySql.INSERT(query.INSERT_WBC_IMAGE_HIST, insertHistArgs)
-            }
-          })
+          // rollback table data
+          var rollbackArgs = []
+          rollbackArgs.push(req.body.cassetId)
+          rollbackArgs.push(req.body.slotId)
+          rollbackArgs.push(srcPath)
+          rollbackArgs.push(destPath)
+          rollbackArgs.push('N')
+          rollbackArgs.push(req.body.userId)
+          rollbackArgs.push(req.body.userId)
+
+          await MySql.INSERT(query.INSERT_IMAGE_ROLLBACK, rollbackArgs)
         })
-
-        var selectArgs = []
-        selectArgs.push(req.body.cassetId)
-        selectArgs.push(req.body.slotId)
-        selectArgs.push(fileList[0].srcClassId)
-        selectArgs.push(fileList[0].targetClassId)
-
-        var results = await MySql.SELECT(query.SELECT_WBC_CLASSIFICATION, selectArgs)
 
         await MySql.COMMIT()
 
+        if (connection) {
+          connection.release()
+        }
+
         retObj.errorCode = 'E0000'
         retObj.errorMessage = ''
-        retObj.results = results
+        retObj.results = []
         res.status(201).send(retObj)
       }
     }
@@ -172,6 +162,10 @@ router.post('/:type', async function (req, res) {
     console.log(err)
 
     await MySql.ROLLBACK()
+
+    if (connection) {
+      connection.release()
+    }
 
     retObj.errorCode = err.code
     retObj.errorMessage = err.message

@@ -498,7 +498,6 @@ export default Object.freeze({
         , TB.LOCAL_IP
         , IFNULL(TB.LOCK_STATE, 'N') AS LOCK_STATE
         , TB.LOCK_DTTM
-        , ROW_NUMBER() OVER(ORDER BY TA.ANALYZE_DTTM DESC) AS ROW_NUM
         , (SELECT JSON_ARRAYAGG(
                   JSON_OBJECT('id', B.CLASS_ID, 'title', B.CLASS_TITLE, 'name', B.CLASS_NM, 'count', B.COUNT)
           ) FROM TB_WBC_CLASSIFICATION B
@@ -1120,6 +1119,15 @@ export default Object.freeze({
      , MODIFY_DTTM = date_format(now(), '%Y%m%d%H%i%S')
      , MODIFY_ID = ?`,
 
+  UPDATE_WBC_IMAGE_HIST:
+  `UPDATE TB_WBC_IMAGE_HIST
+    SET CURRENT_CLASS_ID = ?
+      , MODIFY_ID = ?
+      , MODIFY_DTTM = date_format(now(), '%Y%m%d%H%i%S')
+    WHERE CASSET_ID = ?
+      AND SLOT_ID = ?
+      AND FILE_NM = ?`,
+
   UPDATE_WBC_CLASSIFICATION:
   `UPDATE TB_WBC_CLASSIFICATION
 			SET COUNT = CASE WHEN CLASS_ID = ? THEN COUNT - ?
@@ -1418,14 +1426,54 @@ export default Object.freeze({
       , MODIFY_ID = ?
   WHERE SLOT_ID = ?`,
 
-  UPDATE_TEST_HISTORY_PATIENT:
-  `UPDATE TB_TEST_HISTORY
-    SET BARCODE_NO = ?
-     , PATIENT_ID = ?
-     , PATIENT_NM = ?
-     , MODIFY_DTTM = ?
-     , MODIFY_ID = ?
+  INSERT_IMAGE_ROLLBACK:
+  `INSERT INTO TB_IMAGE_ROLLBACK
+    (
+      CASSET_ID
+      , SLOT_ID
+      , SRC_PATH
+      , DEST_PATH
+      , IS_ROLLBACK
+      , CREATE_DTTM
+      , CREATE_ID
+      , MODIFY_DTTM
+      , MODIFY_ID
+    )
+   VALUES(?,?,?,?,?,date_format(now(), '%Y%m%d%H%i%S'),?,date_format(now(), '%Y%m%d%H%i%S'),?)`,
+
+  UPDATE_IMAGE_ROLLBACK:
+  `UPDATE TB_IMAGE_ROLLBACK
+      SET IS_ROLLBACK = ?
+      , MODIFY_DTTM = date_format(now(), '%Y%m%d%H%i%S')
+      , MODIFY_ID = ?
    WHERE CASSET_ID = ?
-     AND SLOT_ID = ?`
+     AND SLOT_ID = ?
+     AND SRC_PATH = ?
+     AND DEST_PATH = ?`,
+
+  SELECT_IMAGE_ROLLBACK:
+  `SELECT SEQ_NO
+     , CASSET_ID
+     , SLOT_ID
+     , SRC_PATH
+     , DEST_PATH
+     , IS_ROLLBACK
+     , CREATE_DTTM
+     , CREATE_ID
+     , MODIFY_DTTM
+     , MODIFY_ID
+   FROM TB_IMAGE_ROLLBACK
+   WHERE 1=1
+    AND CASSET_ID = ?
+    AND SLOT_ID = ?
+    AND IS_ROLLBACK = 'N'
+    AND MODIFY_ID = ?
+   ORDER BY SEQ_NO ASC`,
+
+  DELETE_BACKUP_TEST_HISTORY:
+  `DELETE
+    FROM TB_TEST_HISTORY
+   WHERE CASSET_ID = ?
+    AND SLOT_ID = ?`
 
 })

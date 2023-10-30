@@ -103,11 +103,13 @@
 
       ipcRenderer.on(Constant.GET_SKMC_REMARK, function (event, results) {
         console.log(results)
-        self.remarkOrgList = results
-        self.remarkOrgList.forEach(function(item) {
-          item.isSelected = 'N'
-        })
-        self.remarkList = self.remarkOrgList
+        if (results) {
+          self.remarkOrgList = results
+          self.remarkOrgList.forEach(function(item) {
+            item.isSelected = 'N'
+          })
+          self.remarkList = self.remarkOrgList
+        }
       })
 
       this.EventBus.$on('REMOVE_SKMC_REMARK', function() {
