@@ -516,6 +516,7 @@
     </b-row>
     <context-menu id="context-menu" ref="ctxMenu">
       <li id="menuOptions" @click="onClickClass(item)" v-for="item in contextMenuItems">
+       <!--contextMenuItems: ['Print', 'Classification', 'Edit order data', 'Delete', 'export XLSX'],-->
         <div class="p-2">
           <div>{{ item }}</div>
         </div>
@@ -722,6 +723,8 @@
       // custom class
       ipcRenderer.on(Constant.SELECT_WBC_CUSTOM_CLASS, function (event, results) {
         console.log(results)
+        // (5) [{…}, {…}, {…}, {…}, {…}]
+        // 클래스 아이디로만 90,91,92,93,94 들어있음
         self.wbcCustomClass = results
       })
 
@@ -1384,7 +1387,11 @@
         self.loadErrorMessage = ''
         if (self.selectItem.TEST_TYPE_CD === '01' || self.selectItem.TEST_TYPE_CD === '04') {
           classList = self.classList(self.selectItem.IS_NS_NB_INTEGRATION)
+          console.log(classList)
+          // (18) [{…}, {…}, {…}, {…}, {…}, {…} ...] WBC class 배열
+
           classDir = rootPath + '/' + self.settings.wbcClassDirName
+          // D:/IA_Proc/20230824150758_00_20230824150806/01_WBC_Classification
 
           // custom class append
           self.wbcCustomClass.forEach(function(wbcCustom) {
@@ -1424,6 +1431,14 @@
         }
 
         console.log(params)
+        // {
+        //  classList: (18)[{...},{...},..{...}], 
+        //  classDir: "D:/IA_Proc/20230824150758_00_20230824150806/01_WBC_Classification"}
+        //  selectItem: {여러가지}
+        // }
+        
+        // classList: {count:0, id:'71', key: "", name:"Neutrophil-Segmented", order:1, percent:0, title:"NS" }
+
         api.getWbcFiles(params)
         .then(function (res) {
           console.log(res)
@@ -1503,12 +1518,14 @@
         try {
           var rootPath = self.settings.pbiaRootPath + '/' + item.SLOT_ID
           var barcodePath = rootPath + '/' + self.settings.barcodeDirName
+          // barcodeDirName: '00_Barcode_Image' CommonStore.js에 있음
 
           // barcode path
           console.log(this.$getDateTime())
           fs.readdir(barcodePath, function(err, file) {
             if (!err) {
               self.barcodePath = 'file://' + barcodePath + '/' + file[0]
+              // file://D:/IA_Proc/20230824150758_00_20230824150806/00_Barcode_Image/barcode_image.jpg
             } else {
               self.barcodePath = null
             }
@@ -1804,7 +1821,9 @@
 
         // 주문내역 조회
         ipcRenderer.on(Constant.GET_TEST_HISTORY_LIST, function (event, result, err) {
+
           console.log(result)
+          // (150) [{...},{...}] size를 150개로 해놔서. 150개 넘어가면 로딩 후에 나머지 부분 나옴
           console.log(err)
           if (err) {
             self.$toasted.show(err.sqlMessage, {

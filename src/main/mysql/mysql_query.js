@@ -457,75 +457,76 @@ export default Object.freeze({
       , CLASS_NM = ?
    WHERE CLASS_ID = ?`,
 
-  SEARCH_TEST_HISTORY_LIST:
-  `SELECT SA.*
-    FROM (
-      SELECT
-        TA.CASSET_ID
-        , TA.SLOT_ID
-        , TA.SLOT_NO
-        , TA.BARCODE_NO
-        , TA.PATIENT_ID
-        , TA.PATIENT_NM
-        , TA.ORDER_DTTM
-        , TA.MALARIA_COUNT
-        , TA.PLT_COUNT
-        , TA.ANALYZE_DTTM
-        , TA.BIRTHDAY
-        , (CASE WHEN (TA.GENDER = '01') THEN 'Male'
-            ELSE 'Female'
-           END) AS GENDER
-        , TA.GENDER AS GENDER_CD
-        , (CASE WHEN (TA.TEST_TYPE = '01' OR TA.TEST_TYPE = '04') THEN 'PB'
-                 ELSE 'BF'
-           END) AS TEST_TYPE
-        , TA.TEST_TYPE AS TEST_TYPE_CD
-        , TA.SIGNED_STATE
-        , TA.SIGNED_DTTM
-        , TA.SIGNED_USER_ID
-        , TA.WBC_COMMENT
-        , TA.RBC_COMMENT
-        , TA.MAX_WBC_COUNT
-        , TA.MAX_RBC_COUNT
-        , TA.SERIAL_NO
-        , TA.TACT_TIME
-        , TA.IS_NS_NB_INTEGRATION
-        , TA.IS_NORMAL
-        , TA.IS_CHECKED
-        , TB.USER_ID
-        , TB.MACHINE_ID
-        , TB.HOST_IP
-        , TB.LOCAL_IP
-        , IFNULL(TB.LOCK_STATE, 'N') AS LOCK_STATE
-        , TB.LOCK_DTTM
-        , (SELECT JSON_ARRAYAGG(
-                  JSON_OBJECT('id', B.CLASS_ID, 'title', B.CLASS_TITLE, 'name', B.CLASS_NM, 'count', B.COUNT)
-          ) FROM TB_WBC_CLASSIFICATION B
-      	 	WHERE TA.CASSET_ID = B.CASSET_ID
-      		 AND TA.SLOT_ID = B.SLOT_ID) WBC_INFO
-        , (SELECT IFNULL(MIN(B.COUNT), 0)
-           FROM TB_WBC_CLASSIFICATION B
-          WHERE TA.CASSET_ID = B.CASSET_ID
-      	 			AND TA.SLOT_ID = B.SLOT_ID
-      				AND B.CLASS_TITLE = 'NR') AS NR_COUNT
-        , (SELECT IFNULL(SUM(B.COUNT), 0)
-      	    FROM TB_WBC_CLASSIFICATION B
-      	   WHERE TA.CASSET_ID = B.CASSET_ID
-      		 		AND TA.SLOT_ID = B.SLOT_ID
-                  AND B.CLASS_TITLE <> 'NR'
-                  AND B.CLASS_TITLE <> 'GP'
-                  AND B.CLASS_TITLE <> 'PA'
-                  AND B.CLASS_TITLE <> 'AR'
-                  AND B.CLASS_TITLE <> 'MA'
-                  AND B.CLASS_TITLE <> 'MC') AS WBC_TOTAL
-        FROM TB_TEST_HISTORY TA
-          LEFT JOIN TB_VIEWER_LOCK_INFO TB
-                  ON TA.CASSET_ID = TB.CASSET_ID
-                  AND TA.SLOT_ID = TB.SLOT_ID
-        WHERE 1=1
-        LIMIT ?, ?
-      )SA
-   WHERE 1=1`,
+   SEARCH_TEST_HISTORY_LIST:
+   `SELECT SA.*
+     FROM (
+       SELECT
+         TA.CASSET_ID
+         , TA.SLOT_ID
+         , TA.SLOT_NO
+         , TA.BARCODE_NO
+         , TA.PATIENT_ID
+         , TA.PATIENT_NM
+         , TA.ORDER_DTTM
+         , TA.MALARIA_COUNT
+         , TA.PLT_COUNT
+         , TA.ANALYZE_DTTM
+         , TA.BIRTHDAY
+         , (CASE WHEN (TA.GENDER = '01') THEN 'Male'
+             ELSE 'Female'
+            END) AS GENDER
+         , TA.GENDER AS GENDER_CD
+         , (CASE WHEN (TA.TEST_TYPE = '01' OR TA.TEST_TYPE = '04') THEN 'PB'
+                  ELSE 'BF'
+            END) AS TEST_TYPE
+         , TA.TEST_TYPE AS TEST_TYPE_CD
+         , TA.SIGNED_STATE
+         , TA.SIGNED_DTTM
+         , TA.SIGNED_USER_ID
+         , TA.WBC_COMMENT
+         , TA.RBC_COMMENT
+         , TA.MAX_WBC_COUNT
+         , TA.MAX_RBC_COUNT
+         , TA.SERIAL_NO
+         , TA.TACT_TIME
+         , TA.IS_NS_NB_INTEGRATION
+         , TA.IS_NORMAL
+         , TA.IS_CHECKED
+         , TB.USER_ID
+         , TB.MACHINE_ID
+         , TB.HOST_IP
+         , TB.LOCAL_IP
+         , IFNULL(TB.LOCK_STATE, 'N') AS LOCK_STATE
+         , TB.LOCK_DTTM
+         , ROW_NUMBER() OVER(ORDER BY TA.ANALYZE_DTTM DESC) AS ROW_NUM
+         , (SELECT JSON_ARRAYAGG(
+                   JSON_OBJECT('id', B.CLASS_ID, 'title', B.CLASS_TITLE, 'name', B.CLASS_NM, 'count', B.COUNT)
+           ) FROM TB_WBC_CLASSIFICATION B
+            WHERE TA.CASSET_ID = B.CASSET_ID
+            AND TA.SLOT_ID = B.SLOT_ID) WBC_INFO
+         , (SELECT IFNULL(MIN(B.COUNT), 0)
+            FROM TB_WBC_CLASSIFICATION B
+           WHERE TA.CASSET_ID = B.CASSET_ID
+                AND TA.SLOT_ID = B.SLOT_ID
+               AND B.CLASS_TITLE = 'NR') AS NR_COUNT
+         , (SELECT IFNULL(SUM(B.COUNT), 0)
+             FROM TB_WBC_CLASSIFICATION B
+            WHERE TA.CASSET_ID = B.CASSET_ID
+                AND TA.SLOT_ID = B.SLOT_ID
+                   AND B.CLASS_TITLE <> 'NR'
+                   AND B.CLASS_TITLE <> 'GP'
+                   AND B.CLASS_TITLE <> 'PA'
+                   AND B.CLASS_TITLE <> 'AR'
+                   AND B.CLASS_TITLE <> 'MA'
+                   AND B.CLASS_TITLE <> 'MC') AS WBC_TOTAL
+         FROM TB_TEST_HISTORY TA
+           LEFT JOIN TB_VIEWER_LOCK_INFO TB
+                   ON TA.CASSET_ID = TB.CASSET_ID
+                   AND TA.SLOT_ID = TB.SLOT_ID
+         WHERE 1=1
+         LIMIT ?, ?
+       )SA
+    WHERE 1=1`,
 
    SEARCH_TEST_HISTORY_LIST_ALL:
    `SELECT TA.*
