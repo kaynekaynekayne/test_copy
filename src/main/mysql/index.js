@@ -1,7 +1,6 @@
 import Configs from '../../Configs.js'
 import DefaultTables from './default_tables.js'
 import query from './mysql_query.js'
-import store from '../../renderer/store'
 
 const log = require('electron-log')
 const mysql = require('mysql')

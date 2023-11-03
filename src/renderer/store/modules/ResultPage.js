@@ -54,17 +54,6 @@ const mutations = {
     state.classificationItem.limit = params.limit
   },
   ADD_DSP_LIST (state, dspList) {
-
-    console.log("*******")
-    console.log("*******")
-    console.log("*******")
-    console.log(dspList)
-    console.log("*******")
-    console.log("*******")
-    console.log("*******")
-
-
-
     state.dspList = dspList
   },
   SET_SORT_TYPE (state, value) {

@@ -1,5 +1,6 @@
 import Constant from '../../../Constant.js'
 import lodash from 'lodash'
+import api from '../../service'
 
 // 공통 코드 정의
 const INIT_COMMON_STATE = {
@@ -324,6 +325,7 @@ const INIT_COMMON_STATE = {
   siteCd: '0001',
   deviceBarcode: '',
   skmcLisResults: null,
+  customClass: null,
   sysInfo: null,
   backendData: null
 }
@@ -487,12 +489,27 @@ const mutations = {
   SET_SKMC_LIS_RESULTS (state, results) {
     state.skmcLisResults = results
   },
+  SET_CUSTOM_CLASS (state, obj) {
+    state.customClass = obj
+  },
   SET_SYS_INFO (state, obj) {
     state.sysInfo = obj
   },
   SET_BACKEND_DATA (state, obj) {
     state.backendData = obj
   }
+  // PB_GET_FILES (state, obj) {
+  //   console.log(state)
+  //   api.PbIaGetFiles({
+  //     url: state.settings.hostIp,
+  //     path: state.settings.pbiaRootPath + '/' + '20230630134412_00_31805552100',
+  //     endPoint: 'api/v1/images'
+  //   }).then(function(ret) {
+  //     console.log(ret)
+  //   }).catch(function(err) {
+  //     console.log(err)
+  //   })
+  // }
 }
 
 const actions = {
@@ -500,6 +517,18 @@ const actions = {
   updateRememberState: (context, obj) => {
     context.commit('UPDATE_REMEMBER_STATE', obj)
   },
+  // updateRunningPath: (context, path) => {
+  //   context.commit('UPDATE_RUNNING_PATH', path)
+  // },
+  // updateResultPathWbc: (context, path) => {
+  //   context.commit('UPDATE_RESULT_PATH_WBC', path)
+  // },
+  // updateResultPathRbc: (context, path) => {
+  //   context.commit('UPDATE_RESULT_PATH_RBC', path)
+  // },
+  // updateBarcodePath: (context, path) => {
+  //   context.commit('UPDATE_BARCODE_PATH', path)
+  // },
   updateRootPath: (context, path) => {
     context.commit('UPDATE_ROOT_PATH', path)
   },
@@ -630,6 +659,9 @@ const actions = {
   },
   setSkmcLisResults: (context, results) => {
     context.commit('SET_SKMC_LIS_RESULTS', results)
+  },
+  setCustomClass: (context, obj) => {
+    context.commit('SET_CUSTOM_CLASS', obj)
   },
   setSysInfo: (context, obj) => {
     context.commit('SET_SYS_INFO', obj)
@@ -772,6 +804,9 @@ const getters = {
   },
   getSkmcLisResults: (state) => {
     return state.skmcLisResults
+  },
+  getCustomClass: (state) => {
+    return state.customClass
   },
   getSysInfo: (state) => {
     return state.sysInfo

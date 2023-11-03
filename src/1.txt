@@ -1,0 +1,15 @@
+
+TB_RBC_CATEGORY
+
+CATEGORY_ID     CATEGORY_NM     CREATE_DTTM     CRAETE_ID       MODIFY_DTTM     MODIFY_ID
+01              Size
+02              Chromia
+03              Shape
+05              Inclusion Body
+
+
+TB_RBC_CLASSIFICATION
+
+
+CATEGORY_ID     CLASS_ID    CLASS_NM     DEGREE     CREATE_DTTM     CRAETE_ID      MODIFY_DTTM     MODIFY_ID
+01              01          Normal

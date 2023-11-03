@@ -524,7 +524,8 @@ export default Object.freeze({
                    ON TA.CASSET_ID = TB.CASSET_ID
                    AND TA.SLOT_ID = TB.SLOT_ID
          WHERE 1=1
-         LIMIT ?, ?
+          AND SUBSTR(ANALYZE_DTTM, 1, 8) BETWEEN REPLACE(?, '-', '') AND REPLACE(?, '-', '')
+          LIMIT ?, ?
        )SA
     WHERE 1=1`,
 

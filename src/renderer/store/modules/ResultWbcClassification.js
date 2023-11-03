@@ -42,7 +42,10 @@ const INITAL_WBC_STATE = {
   }, {
     id: '15', title: 'AR', name: 'Artifact(Smudge)', count: 0, percent: 0, key: '', order: 19
   }]),
-  wbcModifyWbcList: Object.freeze([])
+  wbcModifyWbcList: Object.freeze([]),
+  currentWbcResults: null,
+  beforeWbcResults: null,
+  rollbackList: []
 }
 const state = lodash.cloneDeep(INITAL_WBC_STATE)
 
@@ -107,6 +110,15 @@ const mutations = {
     }
 
     state.classList = Object.freeze(cloneClassList)
+  },
+  SET_CURRENT_WBC_RESULTS (state, obj) {
+    state.currentWbcResults = obj
+  },
+  SET_BEFORE_WBC_RESULTS (state, obj) {
+    state.beforeWbcResults = obj
+  },
+  SET_ROLLBCAK_LIST (state, list) {
+    state.rollbackList = list
   }
 }
 
@@ -131,6 +143,15 @@ const actions = {
   },
   updateOrder: (context, list) => {
     context.commit('UPDATE_ORDER', list)
+  },
+  setCurrentWbcResults: (context, obj) => {
+    context.commit('SET_CURRENT_WBC_RESULTS', obj)
+  },
+  setBeforeWbcResults: (context, obj) => {
+    context.commit('SET_BEFORE_WBC_RESULTS', obj)
+  },
+  setRollbackList: (context, obj) => {
+    context.commit('SET_ROLLBCAK_LIST', obj)
   }
 }
 
@@ -169,6 +190,15 @@ const getters = {
     })
 
     return modifyList
+  },
+  getCurrentWbcResults: state => {
+    return state.currentWbcResults
+  },
+  getBeforeWbcResults: state => {
+    return state.beforeWbcResults
+  },
+  getRollbackList: state => {
+    return state.rollbackList
   }
 }
 

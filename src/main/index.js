@@ -244,8 +244,9 @@ function createWindow () {
     log.info("!crashed, reason: " + detailed.reason + ", exitCode = " + detailed.exitCode)
     if (detailed.reason == "crashed") {
       // relaunch app
-      app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
-      app.exit(0)
+      // app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
+      // app.exit(0)
+      mainWindow.webContents.reload()
     }
   })
 }
@@ -1748,16 +1749,9 @@ ipcMain.on(Constant.UPDATE_MALARIA_COUNT, (event, payload) => {
 })
 
 ipcMain.on(Constant.GET_TEST_HISTORY_LIST, (event, payload) => {
-  
-  log.info(payload)
-  //{"limit":0,"size":150,"searchType":"02","searchText":"","startDate":"","endDate":"","wbcClassList":[],"nrCount":0,"wbcTotalSortCd":"00"}
-
   var params = JSON.parse(payload)
   var args = []
   var searchQuery = query.SEARCH_TEST_HISTORY_LIST
-
-  args.push(Number(params.limit))
-  args.push(Number(params.size))
 
   if (params.searchText !== '') {
     if (params.searchType === '01') {
@@ -1770,13 +1764,15 @@ ipcMain.on(Constant.GET_TEST_HISTORY_LIST, (event, payload) => {
   }
 
   if (params.startDate !== '' && params.endDate !== '') {
-    searchQuery += `\n AND SUBSTR(ANALYZE_DTTM, 1, 8) BETWEEN REPLACE(?, '-', '') AND REPLACE(?, '-', '')`
     args.push(params.startDate)
     args.push(params.endDate)
   } else {
     args.push('1900-01-01')
     args.push('9999-12-31')
   }
+
+  args.push(Number(params.limit))
+  args.push(Number(params.size))
 
   if (Number(params.nrCount) > 0) {
     searchQuery += `\n AND NR_COUNT <= ?`
