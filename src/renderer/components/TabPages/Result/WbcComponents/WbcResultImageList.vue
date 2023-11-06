@@ -2018,9 +2018,6 @@
           })
         } else {
           classList = this.bfClassList
-          // console.log(classList) 
-          // NE, MY, LY 등등 11개 담김 
-          // (11) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, __ob__: Observer]
         }
 
         log.info(classList)
@@ -2090,15 +2087,10 @@
         var classList = []
 
         if (this.selectedItem.TEST_TYPE === '01' || this.selectedItem.TEST_TYPE === '04') {
-          //ResultWbcClassification.js의 classList
           classList = this.classList(this.selectedItem.IS_NS_NB_INTEGRATION)
 
           // custom class append
           self.wbcCustomClass.forEach(function(wbcCustom) {
-            // console.log(self.wbcCustomClass)
-            //(5) [{…}, {…}, {…}, {…}, {…}]
-            // CLASS_ID: "90", CLASS_NM: "", CLASS_TITLE:"" ... CLASS_ID:"94"
-
             if (wbcCustom.CLASS_TITLE !== '') {
               var obj = {
                 count: 0,
@@ -2124,7 +2116,6 @@
             }
           }
         })
-        
       },
       zoom (evt) {
         var targetElement = null

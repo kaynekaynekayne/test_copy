@@ -21,13 +21,8 @@ async function getWbcFiles(params) {
 
     // 클래스 디렉토리 순회
     params.classList.forEach(function(diffClass, index) {
-      // classList: {count:0, id:'71', key: "", name:"Neutrophil-Segmented", order:1, percent:0, title:"NS" }
-      // classDir: "D:/IA_Proc/20230824150758_00_20230824150806/01_WBC_Classification"}
-      
-      var dirName = diffClass.id + '_' + diffClass.title 
-      // 71_NS
+      var dirName = diffClass.id + '_' + diffClass.title
       var classPath = params.classDir + '/' + dirName
-      // D:IA_Proc/20230824150758_00_20230824150806/01_WBC_Classification/71_NS
 
       // 디렉터리 존재 여부 체크
       fs.access(classPath, fs.constants.F_OK, function(err) {
@@ -36,23 +31,15 @@ async function getWbcFiles(params) {
           fs.readdir(classPath, function(err, files) {
             if (!err) {
               if (files) {
-                console.log(files)
-                // (59) ["xx1.bmp", "xx2.bmp", "xx3.bmp"...] 사진들이 배열에 담김
-
                 var wbcFiles = files.filter(function(file) {
                   return filterExp.test(path.extname(file).toLowerCase()) && !filterKor.test(file)
                 })
-                // wbcFiles: 위의 files와 결과는 똑같이 나옴
 
                 var wbcFilesArray = []
                 wbcFiles.forEach(function(wbcFile) {
                   wbcImages.push('file://' + classPath + '/' + wbcFile)
                   wbcFilesArray.push('file://' + classPath + '/' + wbcFile)
                 })
-
-                //wbcImages와 wbcFilesArray 전부
-                //(59) ["file://D:/IA_Proc/20230824150758_00_20230824150806…lassification/15_AR/AR_20231016150116_005_000.bmp",...
-
 
                 classificationResult.push({
                   id: diffClass.id,
@@ -78,16 +65,11 @@ async function getWbcFiles(params) {
                 }
 
                 if (accCount + 1 === params.classList.length) {
-                  
                   var res = {
                     classificationResult: classificationResult,
                     wbcImages: wbcImages,
                     imgCount: imgCount
                   }
-
-                  console.log(res)
-                  // {classificastionResult: Array(18), wbcImages: Array(261), imgCount:200}
-                  // wbcImages 배열에 있는 애들 file://D:/IA_Proc/20230824150758_00_20230824150806/01_WBC_Classification/71_NS/NES_20231016151505_150_000.bmp
 
                   resolve(res)
                 }
@@ -129,7 +111,6 @@ async function getRbcFiles(params) {
     fs.readdir(params.rbcImagePath, function(err, files) {
       if (!err) {
         if (files) {
-          
           var rbcFiles = files.filter(function(file) {
             return filterExp.test(path.extname(file).toLowerCase()) && !filterKor.test(file)
           })

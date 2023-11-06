@@ -21,14 +21,14 @@ export default Object.freeze({
       , MODIFY_DTTM = ?
    WHERE USER_ID = ?`,
 
-   //추가
+   //Ãß°¡
    UPDATE_USER:
    `UPDATE TB_USER
     SET AUTH_CD = ?
      , USER_NM = ?
      , IS_AVAILABLE = ?
      , EMP_NO = ?
-     , MODIFY_DTTM = ?ㅊ
+     , MODIFY_DTTM = ?¤º
     WHERE USER_ID = ?`,
  
 

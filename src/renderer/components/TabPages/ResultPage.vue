@@ -1209,7 +1209,7 @@
             }
           }
         }
-        // 입력 날짜 체크
+        // 입력 날짜 체크 ]
 
         // 연속 검색시 중복데이터 load 오류 수정 (!isShowSpinner)
         if (!this.$refs.infiniteLoading.isShowSpinner) {
