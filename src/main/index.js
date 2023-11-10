@@ -1230,7 +1230,8 @@ ipcMain.on(Constant.SET_LOCK_SLIDE, (event, payload) => {
   args.push(getDateTime())
   args.push(params.userId)
 
-  //update
+  //updated
+  args.push(params.userId)
   args.push(params.lockState)
   args.push(params.userId)
 

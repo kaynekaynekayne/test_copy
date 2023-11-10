@@ -32,6 +32,7 @@ async function getWbcFiles(params) {
             if (!err) {
               if (files) {
                 var wbcFiles = files.filter(function(file) {
+                  // console.log(file)
                   return filterExp.test(path.extname(file).toLowerCase()) && !filterKor.test(file)
                 })
 

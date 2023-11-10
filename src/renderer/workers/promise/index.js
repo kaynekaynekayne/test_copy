@@ -8,6 +8,8 @@ const norWorker = new NorWorker()
 
 const sendDataToServer = function (content, data) {
   norWorker.postMessage({type: 'sendDataToServer', params: data})
+  console.log(content);
+  console.log(data);
   // if (JSON.parse(data).jobCmd === 'SYSINFO') {
   //   sysWorker.postMessage({type: 'sendDataToServerSys', params: data})
   // } else {

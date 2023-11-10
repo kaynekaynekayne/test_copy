@@ -1660,6 +1660,12 @@
           self.EventBus.$emit('OVERLAY', {state: false})
           self.sendSettingInfo('N')
 
+        } else if (jobCmd === 'BARCODE_REG') {
+            self.$toasted.show(Constant.IDS_BARCODE_REGISTRATION_SUCCESSFUL, {
+              position: 'bottom-center',
+              duration: '2000'
+            })
+            
         } else if (jobCmd === 'START') {
           self.$store.dispatch(Constant.UPDATE_RUNNING_STATE, true)
           self.runningIntervalId = setInterval(function() {

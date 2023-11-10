@@ -725,7 +725,8 @@ export default Object.freeze({
 
   UPDATE_SLIDE_LOCK_STATE:
   `UPDATE TB_VIEWER_LOCK_INFO
-     SET IS_CHECKED = ?
+     SET USER_ID = ?
+     , LOCK_STATE = ?
    WHERE CASSET_ID = ?
      AND SLOT_ID = ?`,
 
@@ -933,7 +934,8 @@ export default Object.freeze({
    )
    VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
    ON DUPLICATE KEY UPDATE
-    LOCK_STATE = ?
+      USER_ID = ?
+    , LOCK_STATE = ?
     , MODIFY_DTTM = date_format(now(), '%Y%m%d%H%i%S')
     , MODIFY_ID = ?`,
 

@@ -147,11 +147,9 @@
         // 네트워크 연결 체크
         dns.resolve('www.google.com', function(err, addr) {
           console.log(err)
-            self.checkVersion() 
           if (err !== null) {
             // 버전 체크
-            // 지금 기능 빼놔서 err!==null로 해놓은거
-            // 기능 추가하려면 그냥 self.checkVersion() 해야함
+            self.checkVersion()
           }
         })
 
@@ -213,14 +211,11 @@
         console.log(Package.version)
 
         var versionParams = {Bucket: Configs.BUCKET_NAME, Key: Configs.LATEST_OBJECT_NAME}
-        console.log(versionParams)
-        // {Bucket: "uimd-pb-comm", Key: "latest.yml"}
         s3.getObject(versionParams, function(err, latest) {
           if (err) {
             console.log(err.message)
             self.$modal.hideAll()
           } else {
-            console.log(latest)
             var doc = yaml.load(latest.Body.toString('utf-8'), 'utf8')
 
             var latestVersion = Number(self.$replaceAll(doc.version, '.', ''))
@@ -230,18 +225,9 @@
             console.log(currentVersion)
 
             if (latestVersion > currentVersion) {
-              /*
-                latestVersion(latest.yml에서 확인 가능) < currentVersion인 경우
-                naver cloud->bucket management->uimd-pb-comm->latest.yml 받아서
-                버젼 숫자 고친 후 (예: 현재버젼이 2.0.0이면 2.0.1로 고침)
-                클라우드에 재업로드하면 밑의 코드 실행됨
-              */
               var folderName = 'PB_' + doc.version
               var filePath = folderName + '/' + doc.path
               var backendPath = folderName + '/' + 'backend/'
-              console.log(folderName) //PB_2.0.1
-              console.log(filePath) //PB_2.0.1/UIMD_PB_IA Setup 2.0.1.exe
-              console.log(backendPath) //PB_2.0.1/backend/
 
               // 다운로드 progress
               self.$modal.show(ModalProgress, {}, {
@@ -270,10 +256,8 @@
         console.log('getBackendList')
         var self = this
         var params = {Bucket: Configs.BUCKET_NAME, Prefix: backendPath}
-        console.log(params)
-        // {Bucket: "uimd-pb-comm", Prefix: "PB_2.0.1/backend/"}
 
-s3.listObjectsV2(params, function(err, data) {
+        s3.listObjectsV2(params, function(err, data) {
           console.log(data)
           if (err) {
             self.$modal.hideAll()
@@ -290,7 +274,7 @@ s3.listObjectsV2(params, function(err, data) {
         var self = this
         var params = {Bucket: Configs.BUCKET_NAME, Prefix: prefix}
         self.installerName = prefix.split('/')[1]
-        console.log(prefix)
+
         s3.listObjectsV2(params, function(err, data) {
           console.log(data)
           if (err) {

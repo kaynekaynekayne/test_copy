@@ -1817,7 +1817,13 @@
         var self = this
 
         var wbcModifyList = self.getWbcImageHist(self.currentUser.userId)
-
+        // userId: "cccccc", modifyDttm: "2023-11-07 17:13:15", seqNo: "20231107171315987", srcPath: "D:/IA_Proc/20230824150758_00_20230824150806/01_WBC…assification/71_NS/NES_20231016150116_011_000.bmp", destPath: "D:/IA_Proc/20230824150758_00_20230824150806/01_WBC…assification/13_GP/NES_20231016150116_011_000.bmp", …}
+        console.log('💫')
+        console.log('💫')
+        console.log('💫')
+        console.log('💫')
+        console.log(wbcModifyList)
+        
         if ((wbcModifyList.length) > 0 && (self.curPos < wbcModifyList.length)) {
           var curGroupId = wbcModifyList[self.curPos].groupId
 

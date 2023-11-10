@@ -38,6 +38,7 @@ router.post('/', async function (req, res) {
     var args = []
 
     args.push(req.body.lockState)
+    // args.push(req.body.유저아이디)
     args.push(req.body.cassetId)
     args.push(req.body.slotId)
 

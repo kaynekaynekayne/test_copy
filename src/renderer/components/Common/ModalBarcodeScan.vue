@@ -12,14 +12,17 @@
     </div>
 
     <div id="barcodeBottom" class="pt-3 pb-5 pl-5 pr-5">
-      <div class="w-100" style="border-top: 1px solid white;"></div>
       <b-row v-for="card, index in activationCards" class="mt-5 colorWhite" :key="index">
-        <b-col class="text-left">
+        <!-- <b-col class="text-left">
           {{ card.cardName }}
         </b-col>
         <b-col class="text-center">
           {{ card.cardCount }}
-        </b-col>
+        </b-col> -->
+      </b-row>
+      <div class="w-100 pb-4" style="border-top: 1px solid white;"></div>
+      <b-row>
+        <b-form-input type="text" placeholder="barcode number" v-model="barcodeInput" style="color: white; background-color: rgba(255, 255, 255, 0.2); border: none;"></b-form-input>
       </b-row>
 
       <!-- <b-row class="mt-5 colorWhite">
@@ -40,9 +43,9 @@
       </b-row> -->
 
       <b-row class="text-center mt-5">
-        <!-- <b-col>
+        <b-col>
           <b-button class="w-100" variant="outline-light" size="sm" @click="onRegister">Register</b-button>
-        </b-col> -->
+        </b-col>
         <b-col>
           <b-button class="w-100" variant="outline-light" size="sm" @click="onCancel">Cancel</b-button>
         </b-col>
@@ -60,7 +63,9 @@
     name: 'modal-barcode-scan',
     computed: {
       ...mapGetters({
-        sysInfo: Constant.GET_SYS_INFO
+        sysInfo: Constant.GET_SYS_INFO,
+        currentUser: Constant.GET_CURRENT_USER,
+
       })
     },
     watch: {
@@ -70,7 +75,8 @@
     },
     data: function () {
       return {
-        activationCards: []
+        activationCards: [],
+        barcodeInput: ''
       }
     },
     beforeDestroy () {
@@ -92,6 +98,45 @@
       onCancel () {
         console.log('onCancel')
         this.$emit('close')
+      },
+      onRegister () {
+        console.log("on register")
+        if (this.barcodeInput) {
+          this.sendBarcodeReg(this.barcodeInput)
+        } else {
+            // this.$toasted.show(Constant.IDS_PLEASE_ENTER_YOUR_BARCODE_NUMBER, {
+            //   position: 'bottom-center',
+            //   duration: '2000'
+            // })
+            return
+        }
+      },
+      sendBarcodeReg(barcodeNo) {
+        console.log(barcodeNo)
+
+        var deviceBarcodeNo = barcodeNo.substr(0,12)
+        var type = barcodeNo.substr(12,2)
+        var count = barcodeNo.substr(14,10)
+
+        console.log(deviceBarcodeNo)
+        console.log(type)
+        console.log(count)
+
+        //바코드 regist
+        var params = {
+          jobCmd: 'BARCODE_REG',
+          deviceBarcodeNo,
+          type,
+          count,
+          reqUserId: this.currentUser.userId,
+          reqDttm: this.$getDateTimeStr()
+        }
+
+        console.log(this)
+        console.log(params)
+        //{jobCmd: "BARCODE_REG", deviceBarcodeNo: "673745645645", type: "65", count: "4", reqUserId: "eeeee", …}
+
+        worker.sendDataToServer(this, JSON.stringify(params))
       }
     }
   }
